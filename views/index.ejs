@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/main.css" />
+    <title>Property Delphi</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="py-5 col-9">
+                <div>
+                    
+                    <h1 class="h2"><img src="img/delphi.png" class="delphi-img"> Property Delphi<span class="beta-mark">beta</span></h1>
+                    <p class="mt-20">
+                        Property Delphi is a blockchain solution built with
+                        <a target="_blank" href="https://use.ink">ink!</a> which empowers you to create an indisputable, irrefutable
+                        proof of ownership of your various properties. e.g a plot of
+                        land.<br>
+                        With Property Delphi, nobody can take what is yours and leave you with nothing.
+                    </p>
+                    <p>It is very easy to use. To understand more, please <a target="_blank"
+                            href="https://github.com/thewoodfish/property-delphi">visit here</a>.</p>
+                    <p>Please try it out. Thanks! <span class="text-danger">♥</span></p>
+                </div>
+                <div class="container pl-0">
+                    <nav>
+                        <div class="nav nav-tabs small" id="nav-tab" role="tablist">
+                            <button class="nav-link active" id="nav-search-tab" data-bs-toggle="tab"
+                                data-bs-target="#nav-search" type="button" role="tab" aria-controls="nav-search"
+                                aria-selected="true">
+                                Search for property
+                            </button>
+                            <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab"
+                                data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact"
+                                aria-selected="false">
+                                Create property type
+                            </button>
+                            <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab"
+                                data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile"
+                                aria-selected="false">
+                                Register property
+                            </button>
+                            <button class="nav-link" id="nav-transfer-tab" data-bs-toggle="tab"
+                                data-bs-target="#nav-transfer" type="button" role="tab" aria-controls="nav-transfer"
+                                aria-selected="false">
+                                Transfer property
+                            </button>
+                            <button class="nav-link" id="nav-sign-tab" data-bs-toggle="tab" data-bs-target="#nav-sign"
+                                type="button" role="tab" aria-controls="nav-sign" aria-selected="false">
+                                Enforce property claim
+                            </button>
+                            <button class="nav-link" id="nav-enquire-tab" data-bs-toggle="tab"
+                                data-bs-target="#nav-enquire" type="button" role="tab" aria-controls="nav-enquire"
+                                aria-selected="false">
+                                Enquire
+                            </button>
+                            <button class="nav-link" id="nav-keys-tab" data-bs-toggle="tab" data-bs-target="#nav-keys"
+                                type="button" role="tab" aria-controls="nav-keys" aria-selected="false">
+                                Get keys
+                            </button>
+                        </div>
+                    </nav>
+                    <div class="tab-content" id="nav-tabContent">
+                        <div class="tab-pane fade show active" id="nav-search" role="tabpanel"
+                            aria-labelledby="nav-searcg-tab" tabindex="0">
+                            <div class="pt-10">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="alert alert-danger prop-search-error hidden" role="alert">
+                                                ❌ No results found.
+                                            </div>
+                                            <p>
+                                                Search for any property document or claim. You can search by <code>property
+                                                document title</code> or specifically for properties belonging to an
+                                                individual using their <code>substrate address</code>.
+                                            </p>
+                                        </div>
+                                        <code>Please select your filter. Search by:</code>
+                                        <div class="pt-10">
+                                            <form class="row g-3">
+                                                <div class="col-auto width-50">
+                                                    <select class="form-select mb-3 property-search-filter"
+                                                        aria-label=".form-select-lg example">
+                                                        <option value="property-title" selected>Property Document Title
+                                                        </option>
+                                                        <option value="substrate-address">Substrate address</option>
+                                                    </select>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="hidden document-select-option-1">
+                                            <code>Please input a valid substrate address:</code>
+                                            <form class="row g-3 pt-10">
+                                                <div class="col-auto width-50">
+                                                    <input type="text" class="form-control substrate-address-input"
+                                                        placeholder="5FHneW46xGXgs5mUiveU4sbTyGBzmstU...">
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button class="btn btn-primary mb-3 property-search0-btn-before"
+                                                        onclick="return false">Search</button>
+                                                    <button class="btn btn-primary property-search0-btn-after hidden"
+                                                        type="button" disabled>
+                                                        <span class="spinner-border spinner-border-sm" role="status"
+                                                            aria-hidden="true"></span>
+                                                        Searching...
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="document-select-option-2">
+                                            <code>Please select the specific document type:</code>
+                                            <form class="row g-3 pt-10">
+                                                <div class="col-auto width-50">
+                                                    <select class="form-select mb-3 property-type-selector"
+                                                        aria-label=".form-select-lg example">
+                                                        <option value="zero" selected>Select the right document from
+                                                            this menu</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button class="btn btn-primary mb-3 property-search1-btn-before"
+                                                        onclick="return false">Search</button>
+                                                    <button class="btn btn-primary property-search1-btn-after hidden"
+                                                        type="button" disabled>
+                                                        <span class="spinner-border spinner-border-sm" role="status"
+                                                            aria-hidden="true"></span>
+                                                        Searching...
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="credential-container fs-80">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab"
+                            tabindex="0">
+                            <div class="pt-10">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="alert alert-success document-reg-success hidden" role="alert">
+                                            ✅ Your document has been successfully recorded on the blockchain!
+                                        </div>
+                                        <div class="alert alert-danger document-reg-error hidden" role="alert">
+                                            ❌ Could not load complete operation. Please try again Later.
+                                        </div>
+                                        <div>
+                                            <p> These documents helps provide an unforgeable copy of the claim to your
+                                                property as soon as they are signed by the right authorities.
+                                                What document do you need to cement ownership of your
+                                                property?
+                                            </p>
+                                        </div>
+                                        <code>Kindly select the document that is most appropriate for you:</code>
+                                        <div class="pt-10">
+                                            <form class="row g-3">
+                                                <div class="">
+                                                    <select class="form-select mb-3 document-type-selector"
+                                                        aria-label=".form-select-lg example">
+                                                        <option value="zero" selected>Select the right document from
+                                                            this menu</option>
+                                                    </select>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <p class="mt-30 hidden document-indicator">Document:</p>
+                                        <div class="mt-10 hidden property-document-container">
+                                            <div class="card  br-0 shadow">
+                                                <div class="card-body">
+                                                    <p class="center">📑
+                                                        <code class="document-title"></code>
+                                                    </p>
+                                                    <hr>
+                                                    <div class="row pt-10 document-property-body"></div>
+                                                    <p class="small center color-gray fs-80 mt-30">Property Delphi 2023
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                </div>
+                                            </div>
+                                            <div class="d-grid gap-2 mt-30 ">
+                                                <button class="btn btn-primary submit-filled-document-before"
+                                                    type="button">Submit
+                                                    Document</button>
+                                                <button class="btn btn-primary submit-filled-document-after hidden"
+                                                    type="button" disabled>
+                                                    <span class="spinner-border spinner-border-sm" role="status"
+                                                        aria-hidden="true"></span>
+                                                    Submitting...
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab"
+                            tabindex="1">
+                            <div class="pt-10">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="alert alert-success ptype-reg-success hidden" role="alert">
+                                                ✅ Your property type has been recorded successfully on the blockchain!
+                                            </div>
+                                            <div class="alert alert-danger ptype-reg-error hidden" role="alert">
+                                                ❌ Could not create property type. Please try again Later.
+                                            </div>
+                                            <p>
+                                                Properties differ and only you know what requirements and
+                                                attributes must be present for a property to be registered,
+                                                claimed and considered valid. Please create a property type below and
+                                                state the important informations that must be present in the document.
+                                            </p>
+                                        </div>
+                                        <div class="">
+                                            <code>Title of property registry document e.g Monaco LGA Land Deed.
+                                                </code>
+                                        </div>
+                                        <div class="pb-20 pt-10">
+                                            <form class="row g-3">
+                                                <div class="col-auto width-50">
+                                                    <input type="text" class="form-control doc-title-field"
+                                                        placeholder="title of document">
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <code class="pt-10">Kindly include all the required attributes below!</code>
+                                        <div class="pt-10">
+                                            <form class="row g-3">
+                                                <div class="col-auto">
+                                                    <!-- <label for="attr" class="visually-hidden">attr</label> -->
+                                                    <input type="text" class="form-control attr-field"
+                                                        placeholder="attribute">
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button class="btn btn-primary mb-3 add-attr"
+                                                        onclick="return false">Add</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="pt-10 attr-display">
+                                            <p><code>- Address of property </code></p>
+                                            <p><code>- Size of property </code></p>
+                                        </div>
+                                        <div class="pt-10">
+                                            <button type="button"
+                                                class="btn btn-primary btn reg-property-before">Register
+                                                Property Type</button>
+                                            <button class="btn btn-primary reg-property-after hidden" type="button"
+                                                disabled>
+                                                <span class="spinner-border spinner-border-sm" role="status"
+                                                    aria-hidden="true"></span>
+                                                Registering...
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="nav-transfer" role="tabpanel" aria-labelledby="nav-transfer-tab"
+                            tabindex="3">
+                            <div class="pt-10">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="alert alert-success property-transfer-success hidden"
+                                                role="alert">
+                                                ✅ Your property has been successfully transferred!
+                                            </div>
+                                            <div class="alert alert-danger property-transfer-error hidden" role="alert">
+                                                ❌ <span class="main-error-text"></span>
+                                            </div>
+                                            <p>
+                                                You can transfer your property easily and without stress to another
+                                                individual or entity in a secure and transparent fashion. All you need
+                                                is the <code>Substrate address </code>of the entity and the ID of the
+                                                property.
+                                            </p>
+                                        </div>
+                                        <code>Please input a valid property ID:</code>
+                                        <div class="pt-10">
+                                            <form class="row g-3">
+                                                <div class="col-auto width-50">
+                                                    <!-- <label for="attr" class="visually-hidden">attr</label> -->
+                                                    <input type="text" class="form-control input-for-transfer"
+                                                        placeholder="0x829f65744b2nd5742cec908a6cf3bfe4f3c19c14d5...">
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button class="btn btn-primary mb-3 transfer-search-btn-before"
+                                                        onclick="return false">Load Document</button>
+                                                    <button class="btn btn-primary transfer-search-btn-after hidden"
+                                                        type="button" disabled>
+                                                        <span class="spinner-border spinner-border-sm" role="status"
+                                                            aria-hidden="true"></span>
+                                                        Loading...
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <p class="mt-30 document-trans-indicator hidden">Document:</p>
+                                        <div class="mt-10 document-trans-container hidden">
+                                            <div class="card  br-0 shadow">
+                                                <div class="card-body">
+                                                    <p class="center">📑
+                                                        <code class="trans-document-title"></code>
+                                                    </p>
+                                                    <hr>
+                                                    <div>
+                                                        <div class="mb-3 col-6">
+                                                            <code class="form-label">Valid substrate address of
+                                                                recipient:</code>
+                                                            <input type="text"
+                                                                class="form-control mt-10 form-control-sm recipient-addr"
+                                                                id="" placeholder="5FHneW46xGXgs5mUiveU4sbTyGBzmstU...">
+                                                        </div>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="row pt-10 document-trans-body">
+                                                    </div>
+                                                    <hr>
+                                                    <div>
+                                                        <div class="flex">
+                                                            <code>You are agreeing to transfer </code>
+                                                            <input type="number"
+                                                                class="form-control form-control-sm trans-property-size"
+                                                                value="1"> <code class="property-size"></code>.
+                                                        </div>
+                                                    </div>
+                                                    <p class="small center color-gray fs-80 mt-30">Property Delphi 2023
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="d-grid gap-2 mt-30 ">
+                                                <button class="btn btn-primary transfer-property-btn-before"
+                                                    type="button">Transfer Property</button>
+                                                <button class="btn btn-primary transfer-property-btn-after hidden"
+                                                    type="button" disabled="">
+                                                    <span class="spinner-border spinner-border-sm" role="status"
+                                                        aria-hidden="true"></span>
+                                                    Processing transfer...
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="nav-sign" role="tabpanel" aria-labelledby="nav-sign-tab"
+                            tabindex="4">
+                            <div class="pt-10">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="alert alert-success document-sig-success hidden" role="alert">
+                                                ✅ You have successfully signed the document.
+                                            </div>
+                                            <div class="alert alert-danger document-sig-error hidden" role="alert">
+
+                                            </div>
+                                            <p>
+                                                This is equivalent to a physical document signature. The property claim
+                                                can be signed by anyone as a witness. But it only becomes potent and
+                                                valid when it is the signed by the right authority e.g the governors
+                                                office.
+                                            </p>
+                                        </div>
+                                        <code>Please input a valid property ID:</code>
+                                        <div class="pt-10">
+                                            <form class="row g-3">
+                                                <div class="col-auto width-50">
+                                                    <!-- <label for="attr" class="visually-hidden">attr</label> -->
+                                                    <input type="text" class="form-control input-for-signature"
+                                                        placeholder="0x829f65744b2nd5742cec908a6cf3bfe4f3c19c14d5...">
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button class="btn btn-primary mb-3 search-pdoc-btn-before"
+                                                        onclick="return false">Load Document</button>
+                                                    <button class="btn btn-primary search-pdoc-btn-after hidden"
+                                                        type="button" disabled>
+                                                        <span class="spinner-border spinner-border-sm" role="status"
+                                                            aria-hidden="true"></span>
+                                                        Loading...
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <p class="mt-30 document-sig-indicator hidden">Document:</p>
+                                        <div class="mt-10 document-sig-container hidden">
+                                            <div class="card  br-0 shadow">
+                                                <div class="card-body">
+                                                    <p class="center">📑
+                                                        <code class="sig-document-title"></code>
+                                                    </p>
+                                                    <hr>
+                                                    <div>
+                                                        <code
+                                                            class="bold">🧍🏽‍♀️ Property Claimer: <span class="property-claimer"></span></code>
+                                                    </div>
+                                                    <hr>
+                                                    <div class="row pt-10 document-sig-body">
+                                                    </div>
+                                                    <p class="small center color-gray fs-80 mt-30">Property Delphi 2023
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="d-grid gap-2 mt-30 ">
+                                                <button class="btn btn-primary sign-document-btn-before"
+                                                    type="button">✍🏼 Sign
+                                                    Document</button>
+                                                <button class="btn btn-primary sign-document-btn-after hidden"
+                                                    type="button" disabled="">
+                                                    <span class="spinner-border spinner-border-sm" role="status"
+                                                        aria-hidden="true"></span>
+                                                    Signing...
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="nav-keys" role="tabpanel" aria-labelledby="nav-keys-tab"
+                            tabindex="5">
+                            <div class="pt-10">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="alert alert-danger mnemonic-error-text hidden" role="alert">
+                                                ❌ An error occurred. Please try again later.
+                                            </div>
+                                            <p>
+                                                Mnemonics help authenticate and perform many operations on
+                                                <code>Property Delphi</code>. Each is unique per individual.<br> Please
+                                                keep
+                                                them very save and private!
+                                            </p>
+                                        </div>
+                                        <code>Synthesize your mnemonics below:</code>
+                                        <div class="pt-10">
+                                            <form class="row g-3">
+                                                <div class="col-auto width-50">
+                                                    <!-- <label for="attr" class="visually-hidden">attr</label> -->
+                                                    <input type="text" class="form-control pseudo-name"
+                                                        placeholder="your name or pseudo-name e.g woodfish">
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button class="btn btn-primary mb-3 gen-mnemonics-before"
+                                                        onclick="return false">Generate mnemonic</button>
+                                                    <button class="btn btn-primary gen-mnemonics-after hidden"
+                                                        type="button" disabled>
+                                                        <span class="spinner-border spinner-border-sm" role="status"
+                                                            aria-hidden="true"></span>
+                                                        Generating...
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="mnemonics-container hidden">
+                                            <div class="card alert-div">
+                                                <div class="card-body fs-80">
+                                                    This is your mnemonic:
+                                                    <div class="mnemonics bold">
+                                                        <code class="mnemonic-seed">
+                                                        </code>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body fs-80 pt-0">
+                                                    This is your <a target="_blank" href="https://docs.kilt.io/docs/develop/chain/pallets/pallet-did">DID</a>:
+                                                    <div class="mnemonics bold">
+                                                        <code class="kilt-did-result"></code>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="nav-enquire" role="tabpanel" aria-labelledby="nav-keys-tab"
+                            tabindex="5">
+                            <div class="pt-10">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div>
+                                            <div class="alert alert-danger enquiry-error hidden" role="alert">
+                                                ❌ Could not complete query. Please check your input or try again later.
+                                            </div>
+                                            <p>
+                                                This is the most important feature of <code>Property Delphi</code>. <br>
+                                                Here you are given crucial information about a property e.g its real
+                                                owner.
+                                                The results are <code class="green">100% accurate</code>, void of any
+                                                errors.
+                                            </p>
+                                        </div>
+                                        <code>Please input a valid property ID:</code>
+                                        <div class="pt-10">
+                                            <form class="row g-3">
+                                                <div class="col-auto width-50">
+                                                    <!-- <label for="attr" class="visually-hidden">attr</label> -->
+                                                    <input type="text" class="form-control pid-for-enquiry"
+                                                        placeholder="0x829f65744b2nd5742cec908a6cf3bfe4f3c19c14d5...">
+                                                </div>
+                                                <div class="col-auto">
+                                                    <button class="btn btn-primary mb-3 make-enquiry-btn-before"
+                                                        onclick="return false">Make Enquiry</button>
+                                                    <button class="btn btn-primary make-enquiry-btn-after hidden"
+                                                        type="button" disabled>
+                                                        <span class="spinner-border spinner-border-sm" role="status"
+                                                            aria-hidden="true"></span>
+                                                        Processing request...
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="enquiry-container">
+                                            <hr>
+                                            <div class="row hidden negative-verdict">
+                                                <div class="col-4 pt-10">
+                                                    <img src="img/verdict.png" class="width-100">
+                                                </div>
+                                                <div class="card col-8 border-0">
+                                                    <div class="card-body pt-0">
+                                                        <div class="pt-10"><span>Property ID: <span
+                                                                    class="prop-id green small"></span></span>
+                                                        </div>
+                                                        <div  class="pt-10">Claim History: <div class="claimers-list green small">
+
+                                                            </div>
+                                                        </div>
+                                                        <div  class="pt-10"><span >Claimer ID: <span class="claimer-id  green small"></span></span>
+                                                        </div>
+                                                        <div class="bold pt-10">Verdict: The claim to the property has not been
+                                                            confirmed by the right authority, hence the claim is invalid
+                                                            and
+                                                            can be disputed.</div>
+                                                        <div class="enquiry-details bold pt-10">
+                                                            <code class="">
+                                                        </code>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row hidden positive-verdict">
+                                                <div class="col-4 pt-10">
+                                                    <img src="img/verdict.png" class="width-100">
+                                                </div>
+                                                <div class="col-8 card border-0">
+                                                    <div class="card-body pt-0">
+                                                        <div  class="pt-10"><span>Property ID: <span
+                                                                    class="prop-id green small"></span></span>
+                                                        </div>
+                                                        <div  class="pt-10">Claim History: <div class="claimers-list green small">
+
+                                                            </div>
+                                                        </div>
+                                                        <div  class="pt-10"><span>Claimer ID: <span
+                                                                    class="claimer-id green"></span></span></div>
+                                                        <div class="bold pt-10">Verdict: The property rightfully belongs to the
+                                                            claimer. It was confirmed by the right authority on
+                                                            <code><span class="verdict-datetime green"></span></code>.
+                                                        </div>
+                                                        <div class="enquiry-details bold pt-10">
+                                                            <code class="">
+                                                            </code>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="config mt-30 col-3">
+                <div>
+                    <div class="card" style="width: 18rem;">
+                        <div class=" pl-10">
+                            <p class="chain-connected hidden ml-10 pt-10"><span class="cfg-connect fs-80"><span
+                                        class="fs-120 pr-10">📶</span>Connected</span>
+                                <span class="badge bg-primary rounded-pill mr-10 right m-t-5 connection-count"></span>
+                            </p>
+                            <p class="">
+                            <div class="cfg-connect chain-connecting fs-80 ml-10">
+                                <div class="spinner-border spinner-border-sm" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                Connecting...
+                            </div>
+                            </p>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                <div class="iflex">
+                                    <div class="profile-picture">
+                                        <img src="img/woodfish.jpeg" alt="Profile Picture">
+                                    </div>
+                                    <ul class="list-group list-group-flush fs-80 ml-10">
+                                        <li class="pl-0 list-group-item pr-0"><span
+                                                class="signed-in-user-name">Woodfish</span> <a
+                                                class="right pointer sign-in-prompt" data-bs-toggle="collapse"
+                                                href="#signInUser" role="button" aria-expanded="false"
+                                                aria-controls="signInUser">
+                                                Sign In
+                                            </a></li>
+                                        <li class="pl-0 list-group-item pr-0"><code
+                                                class="signed-in-user-did">15huihRBrFabS5im4tgcYZ52Az...</code>
+                                        </li>
+                                        <li class="list-group-item p-0">
+                                            <div class="pt-10">
+                                                <div class="collapse" id="signInUser">
+                                                    <textarea class="form-control fs-80 seed-phrase-ta"
+                                                        id="exampleFormControlTextarea1" rows="3"
+                                                        placeholder="Enter your seed phrase..."></textarea>
+                                                    <input class="btn btn-primary btn-sm mt-10 sign-in-btn-before"
+                                                        type="button" value="Sign in">
+                                                    <button
+                                                        class="btn btn-sm mt-10 btn-primary sign-in-btn-after hidden"
+                                                        type="button" disabled>
+                                                        <span class="spinner-border spinner-border-sm" role="status"
+                                                            aria-hidden="true"></span>
+                                                        loading...
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- toast  -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <span class="mr-10 fs-150"><img src="img/delphi.png" class="delphi-img"> </span>
+                <strong class="me-auto">Property Delphi</strong>
+                <small>Now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+
+    <!-- footer  -->
+    <div class="footer mt-10 center">
+        <code>[[A work of Art] by <a target="_blank" href="https://twitter.com/thewoodfish">@thewoodfish</a>]. Copyright (c) 2024. All rights reserved</code>
+    </div>
+
+    <!-- important JS files  -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+        crossorigin="anonymous"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
