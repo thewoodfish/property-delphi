@@ -2,7 +2,7 @@
 
 // imports
 import { createRequire } from "module";
-import path from 'path';
+import path, { parse } from 'path';
 import { fileURLToPath } from 'url';
 
 // imports
@@ -40,10 +40,10 @@ const chain = await import('./contract.cjs');
 import * as meta from "./metadata.js";
 
 // storage API import
-// import * as storg from "./storage.js";
+import * as storg from "./storage.js";
 
 // blockchain config
-const contract_addr = "5C6spiS6igvkpnMsq97HXjefjpPqdbFK9YTXZc3n8eutfxSY";
+const contract_addr = "5HSCkfAsHSR8pfnoZB4F1EUuhXR8rK36MzpKP76fty9QqDgY";
 const wsProvider = new WsProvider('ws://127.0.0.1:9944');
 const api = await ApiPromise.create({ provider: wsProvider });
 const contract = new ContractPromise(api, meta.metadata(), contract_addr);
@@ -100,6 +100,10 @@ app.post('/gen-keys', (req, res) => {
 
 app.post('/register-ptype', (req, res) => {
     createPropertyType(req.body, res);
+});
+
+app.post('/fetch-ptypes', (req, res) => {
+    fetchPropertyTypes(req.body, res);
 });
 
 app.post('/connect-chains', (req, res) => {
@@ -187,7 +191,7 @@ async function authAccount(req, res) {
         await chain.authAccount(api, contract, /* user */alice).then(data => {
             const hexString = data.Ok.data.slice(2);
             const buffer = Buffer.from(hexString.slice(2), 'hex');
-            const name = filterNonStringChars(buffer.toString());
+            const name = filterNonStringChars(buffer.toString())
 
             if (name.length) {
                 let session_nonce = blake2AsHex(mnemonicGenerate());
@@ -227,10 +231,10 @@ async function authAccount(req, res) {
 // create type of property
 async function createPropertyType(req, res) {
     try {
-        let session_data = authUser(req.nonce);
-        if (session_data) {
+        let sessionData = authUser(req.nonce);
+        if (sessionData) {
             // create a JSON document containing the required property data;
-            let document = createPropertyDocument(session_data, req.attributes, req.title);
+            let document = createPropertyDocument(sessionData, req.attributes, req.title);
 
             // It's important that we store it on IPFS because the document has to be immutable
             // and then store the CID onchain in an authenticated (only-key-changing) manner
@@ -238,12 +242,11 @@ async function createPropertyType(req, res) {
             // we'll store it on IPFS and keep its cid
             await storg.uploadToIPFS(JSON.stringify(document)).then(async ptypeCid => {
                 // Get a unique property document ID
-                // Property name + registrar address
-                let docId = hashString(req.title + /* session_data.ss58_addr */ alice.address);
-                console.log(docId);
+                // Property name + random number
+                let docId = `${req.title}-${generateRandomNumber()}`;
 
                 // call contract to register property type onchain
-                await chain.registerPtype(api, contract, /* session_data.user */alice, docId, ptypeCid).then(() => {
+                await chain.registerPtype(api, contract, /* sessionData.user */alice, docId, ptypeCid).then(() => {
                     // return success
                     return res.send({
                         data: {},
@@ -259,6 +262,60 @@ async function createPropertyType(req, res) {
             },
             error: true
         })
+    }
+}
+
+// fetch property document types registered by an authority
+async function fetchPropertyTypes(req, res) {
+    try {
+        let sessionData = authUser(req.nonce);
+        if (sessionData) {
+            // get authority address
+            let authAddr = req.address;
+
+            // now fetch CIDs of all the property document types registered
+            await chain.ptypeDocuments(api, contract, /* sessionData.user */alice, authAddr).then(data => {
+                console.log(parseContractBytes(data));
+            });
+
+            // query IPFS to get the DID document
+            // await storg.getFromIPFS(registrar_cid).then(async data => {
+            //     let didDoc = JSON.parse(data);
+
+            //     // get the credential from IPFS also
+            //     await storg.getFromIPFS(credential_cid).then(async cdata => {
+            //         let cred = JSON.parse(cdata);
+
+            //         // create a verifiable presentation from the credential
+            //         let presentation = await kilt.getPresentation(cred, didDoc.mnemonic);
+
+            //         // check validity
+            //         let isValid1 = kilt.verifyPresentation(presentation);     // KILTs API throws errors here
+
+            //         // improvise to check validity
+            //         let isValid2 = verifiers.includes(registrar);
+
+            //         // return validity
+            //         return res.send({
+            //             data: {
+            //                 isValid: isValid1 && isValid2,
+            //                 registrar,
+            //                 claimers,
+            //                 claimer: claimers[claimers.length - 1],
+            //                 timestamp
+            //             },
+            //             error: false
+            //         });
+            //     });
+            // });
+        }
+    } catch (e) {
+        return res.send({
+            data: {
+                claimer: null
+            },
+            error: true
+        });
     }
 }
 
@@ -291,9 +348,20 @@ function createPropertyDocument(ss58_address, attributes, title) {
     }
 }
 
-function hashString(string) {
-    return blake2AsHex(string);
+function generateRandomNumber() {
+    let min = 111111;
+    let max = 999999;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function parseContractBytes(data) {
+    const hexString = data.Ok.data;
+    let string =  api.createType("String", hexToU8a(hexString)).toString();
+    console.log(hexString);
+    console.log(hexToU8a(hexString));
+    return string;
 }
 
 // listen on port 3000
 app.listen(port, () => console.info(`listening on port ${port}`));
+

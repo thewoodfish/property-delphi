@@ -62,6 +62,22 @@ function convertTimestamp(timestamp) {
     return `${dayOfWeek} ${hours}:${minutes}${ampm}, ${dayOfMonth}${getOrdinalIndicator(dayOfMonth)} of ${month}, ${date.getUTCFullYear()}`;
 }
 
+function isValidSS58Addr(input) {
+    // Regular expression for a valid SS58 address (excluding version byte)
+    const regex = /^[a-km-zA-HJ-NP-Z1-9]{44,47}$/;
+
+    // Check if the input string is present and has the correct length
+    if (!input || input.length < 45 || input.length > 48) {
+        return false;
+    }
+
+    // Extract the address without the version byte (first character)
+    const address = input.slice(1);
+
+    // Validate the address using the regular expression
+    return regex.test(address);
+}
+
 // Function to get the ordinal indicator (e.g. st, nd, rd, th) for a number
 function getOrdinalIndicator(num) {
     if (num > 3 && num < 21) return 'th';
@@ -107,9 +123,9 @@ async function heartbeat() {
         });
 }
 
-async function queryServerToSignIn(seed, rollup) {
+async function queryServerToSignIn(seed, rollup, on_connect = false) {
     // send request to chain
-    if (!is_connected()) return;
+    if (!is_connected() && !on_connect) return;
     fetch("/sign-in", {
         method: 'post',
         headers: {
@@ -124,10 +140,10 @@ async function queryServerToSignIn(seed, rollup) {
                 if (!res.error) {
                     clearField(".seed-phrase-ta");
                     setSessionNonce(res.data.nonce);
-                    updateAuthUser(res.data.did, res.data.name);
+                    updateAuthUser(res.data.ss58_addr, res.data.name);
                     hide(".sign-in-btn-after");
                     appear(".sign-in-btn-before");
-                    toast(`Hey <code>${getFirstName(res.data.name)}</code>, Welcome to <code>Property Oracle</code>`);
+                    toast(`Hey <code>${getFirstName(res.data.name)}</code>, Welcome to <code>Property Delphi</code>`);
 
                     // roll up the card
                     if (rollup) click(".sign-in-prompt");
@@ -177,33 +193,6 @@ function setSessionNonce(value) {
 
 function getSessionNonce(value) {
     return sessionStorage.getItem("session_nonce");
-}
-
-async function populatePropertyTitles() {
-    // fetch all the property titles from the chain
-    if (!is_connected()) return;
-    fetch("/fetch-titles", {
-        method: 'get',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(async res => {
-            await res.json().then(res => {
-                // populate UI
-                let select = qs(".document-type-selector");
-                res.data.forEach(p => {
-                    select.innerHTML += `<option value="${p.title}$$$${p.cid}$$$${p.attr}$$$${p.key}">${p.title}</option>`;
-                });
-
-                // populate UI of type selector
-                let select1 = qs(".property-type-selector");
-                res.data.forEach(p => {
-                    select1.innerHTML += `<option value="${p.title}">${p.title}</option>`;
-                });
-            });
-            ;
-        })
 }
 
 async function populateProperties(value, type) {
@@ -300,7 +289,7 @@ async function initChainConnection(addr) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                "addr": addr
+                "addr": addr,
             })
         })
             .then(async res => {
@@ -311,11 +300,12 @@ async function initChainConnection(addr) {
                     }, 30000);
 
                     // if nonce is still present, sign user in automatically
-                    if (getSessionNonce())
-                        await queryServerToSignIn(getSessionNonce(), false);      // roll up the card
+                    if (getSessionNonce()) {
+                        await queryServerToSignIn(getSessionNonce(), false, true);
+                    }
+
                     resolve(res.status);
                 });
-                ;
             })
     });
 
@@ -327,6 +317,23 @@ function click(attr) {
     qs(attr).click();
 }
 
+function clearPropertyAttributes() {
+    const container = qs(".attr-display");
+    if (container) {
+        // Use a traditional loop for clarity and potential performance benefits:
+        for (let i = container.children.length - 1; i > 1; i--) {
+            container.removeChild(container.children[i]);
+        }
+
+        // reduce the property buffers to their initial state
+        ptype_buffer = ["Address of property", "Size of property"];
+        pseudo_buffer = ["address of property", "size of property"];
+    } else {
+        console.warn("Container with class 'attr-display' not found.");
+    }
+}
+
+
 // to prevent duplicate additiom of values
 let ptype_buffer = ["Address of property", "Size of property"];
 let pseudo_buffer = ["address of property", "size of property"];
@@ -337,7 +344,6 @@ toast(`waiting to connect to the <code>contracts node</code>.`);
 (async function () {
     if (await initChainConnection('ws://127.0.0.1:9944') == "connected") {
         // update UI
-        await populatePropertyTitles();   // populate the document titles
         incConnectionCount();
         hide(".chain-connecting");
         appear(".chain-connected");
@@ -415,7 +421,7 @@ document.body.addEventListener(
                                         appear(".ptype-reg-success");
                                         clearField(".doc-title-field");
                                         setTimeout(() => hide(".ptype-reg-success"), 5000);
-                                        populatePropertyTitles();
+                                        clearPropertyAttributes();
                                     } else {
                                         appear(".ptype-reg-error");
                                         setTimeout(() => hide(".ptype-reg-error"), 5000);
@@ -426,6 +432,56 @@ document.body.addEventListener(
                     }
                 } else {
                     toast(`❌ You need to specify more attributes.`);
+                }
+            } else if (e.classList.contains("load-properties-btn-before")) {
+                if (!is_connected()) return;
+
+                const authAddr = qs(".authority-ss58-addr").value;
+                if (isValidSS58Addr(authAddr)) {
+                    hide(".load-properties-btn-before");
+                    appear(".load-properties-btn-after");
+
+                    // send request to chain
+                    fetch("/fetch-ptypes", {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            "address": authAddr,
+                            "nonce": getSessionNonce()
+                        })
+                    })
+                        .then(async res => {
+                            await res.json().then(res => {
+                                hide(".load-properties-btn-after");
+                                appear(".load-properties-btn-before");
+
+                                if (!res.error) {
+                                    // populate UI
+                                    // let select = qs(".document-type-selector");
+                                    // res.data.forEach(p => {
+                                    //     select.innerHTML += `<option value="${p.title}$$$${p.cid}$$$${p.attr}$$$${p.key}">${p.title}</option>`;
+                                    // });
+
+                                    // // populate UI of type selector
+                                    // let select1 = qs(".property-type-selector");
+                                    // res.data.forEach(p => {
+                                    //     select1.innerHTML += `<option value="${p.title}">${p.title}</option>`;
+                                    // });
+                                    console.log(res.data);
+
+                                    // set timeout to remove div
+                                    setTimeout(() => hide(".mnemonics-container"), 10000);
+                                } else {
+                                    appear(".mnemonic-error-text");
+                                    setTimeout(() => hide(".mnemonic-error-text"), 5000);
+                                }
+                            });
+                            ;
+                        })
+                } else {
+                    toast(`❌ Invalid address provided`);
                 }
             } else if (e.classList.contains("gen-mnemonics-before")) {
                 if (!is_connected()) return;
@@ -451,14 +507,14 @@ document.body.addEventListener(
                                 appear(".gen-mnemonics-before");
 
                                 if (!res.error) {
-                                    const did = res.data.did.split(`:`, 4).join(`:`);
+                                    const ss58_addr = res.data.ss58_addr;
                                     clearField(".pseudo-name");
                                     appear(".mnemonics-container");
                                     toast(`You have <code class="bold">10 seconds</code> to copy your keys`);
 
                                     qs(".mnemonic-seed").innerText = res.data.seed;
-                                    qs(".kilt-did-result").innerText = did;
-                                    updateAuthUser(did, name);
+                                    qs(".kilt-did-result").innerText = ss58_addr;
+                                    updateAuthUser(ss58_addr, name);
 
                                     // set session nonce
                                     setSessionNonce(res.data.nonce);
@@ -485,6 +541,18 @@ document.body.addEventListener(
 
                     queryServerToSignIn(seed, true);
                 }
+            } else if (e.classList.contains("copy-to-clipboard")) {
+                // copy to clipboard
+                let copy_text = qs(`.${e.dataset.target}`).innerText;
+
+                if (!navigator.clipboard)
+                    toast("Clipboard API not supported");
+
+                navigator.clipboard.writeText(copy_text).then(() => {
+                    toast("Text copied to clipboard!");
+                }, () => {
+                    toast("Failed to copy text to clipboard");
+                });
             } else if (e.classList.contains("submit-filled-document-before")) {
                 if (!is_connected()) return;
                 if (userIsAuth()) {
@@ -893,7 +961,7 @@ document.body.addEventListener(
                 toast("Copied to clipboard");
             }
         } else {
-            toast(`waiting to connect to the <code>Property Oracle</code> and <code>KILT</code> chain.`);
+            toast(`waiting to connect to the <code>contracts</code> chain.`);
         }
     },
     false
