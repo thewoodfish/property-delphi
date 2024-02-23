@@ -458,27 +458,17 @@ document.body.addEventListener(
                                 appear(".load-properties-btn-before");
 
                                 if (!res.error) {
+                                    appear(".document-selection-div");
+
                                     // populate UI
-                                    // let select = qs(".document-type-selector");
-                                    // res.data.forEach(p => {
-                                    //     select.innerHTML += `<option value="${p.title}$$$${p.cid}$$$${p.attr}$$$${p.key}">${p.title}</option>`;
-                                    // });
-
-                                    // // populate UI of type selector
-                                    // let select1 = qs(".property-type-selector");
-                                    // res.data.forEach(p => {
-                                    //     select1.innerHTML += `<option value="${p.title}">${p.title}</option>`;
-                                    // });
-                                    console.log(res.data);
-
-                                    // set timeout to remove div
-                                    setTimeout(() => hide(".mnemonics-container"), 10000);
-                                } else {
-                                    appear(".mnemonic-error-text");
-                                    setTimeout(() => hide(".mnemonic-error-text"), 5000);
+                                    let select = qs(".document-type-selector");
+                                    select.innerHTML = `<option class="select-option" value="zero">Select the right document from this menu</option>`;
+                                    [].forEach.call(res.data, (p) => {
+                                        console.log(p);
+                                        select.innerHTML += `<option value="${p.slug}" class="select-option" data-props="${p.attributes.join("$$$")}">${p.name}</option>`;
+                                    });
                                 }
                             });
-                            ;
                         })
                 } else {
                     toast(`❌ Invalid address provided`);
@@ -980,15 +970,13 @@ document.body.addEventListener(
             let docBody = qs(".document-property-body");
             docBody.innerHTML = "";
             if (e.value != "zero") {
-                const selected = e.value.split("$$$");
-                const attributes = selected[2].split('~');
-                const cid = selected[1];
+                const attributes = e.children[e.selectedIndex].dataset.props.split("$$$");
 
                 appear(".document-indicator");
                 appear(".property-document-container");
-                qs(".document-title").innerText = selected[0];
+                qs(".document-title").innerText = e.children[e.selectedIndex].innerText;
 
-                attributes.forEach(a => {
+                [].forEach.call(attributes, (a) => {
                     docBody.innerHTML += `
                     <div class="mb-3 col-6">
                         <label for="${a}"
@@ -1013,3 +1001,9 @@ document.body.addEventListener(
             }
         }
     }, false);
+
+// prevent forms from submitting normally
+let forms = document.getElementsByTagName("form");
+[].forEach.call(forms, (f) => {
+    f.onsubmit = function () { return false };
+});

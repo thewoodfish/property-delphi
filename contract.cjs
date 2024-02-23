@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ptypeDocuments = exports.registerPtype = exports.authAccount = exports.createAccount = void 0;
+exports.registerClaim = exports.ptypeDocuments = exports.registerPtype = exports.authAccount = exports.createAccount = void 0;
 var util_1 = require("@polkadot/util");
 var MAX_CALL_WEIGHT = new util_1.BN(5000000000000).isub(util_1.BN_ONE);
 var PROOFSIZE = new util_1.BN(1000000);
@@ -225,3 +225,75 @@ function ptypeDocuments(api, contract, account, authAddr) {
     });
 }
 exports.ptypeDocuments = ptypeDocuments;
+function registerClaim(api, contract, account, propertyTitle, propClaimId, claimCid) {
+    return __awaiter(this, void 0, void 0, function () {
+        var gasLimit, _a, gasRequired, storageDeposit, result, error, dispatchError, flags, type, typeName, error, estimatedGas, unsub;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    gasLimit = api.registry.createType('WeightV2', api.consts.system.blockWeights['maxBlock']);
+                    return [4 /*yield*/, contract.query.registerClaim(account.address, {
+                            gasLimit: gasLimit,
+                            storageDepositLimit: null,
+                            value: new util_1.BN('1000000000000000000')
+                        }, propertyTitle, propClaimId, claimCid)
+                        // Check for errors
+                    ];
+                case 1:
+                    _a = _b.sent(), gasRequired = _a.gasRequired, storageDeposit = _a.storageDeposit, result = _a.result;
+                    // Check for errors
+                    if (result.isErr) {
+                        error = '';
+                        if (result.asErr.isModule) {
+                            dispatchError = api.registry.findMetaError(result.asErr.asModule);
+                            error = dispatchError.docs.length ? dispatchError.docs.concat().toString() : dispatchError.name;
+                        }
+                        else {
+                            error = result.asErr.toString();
+                        }
+                        console.error(error);
+                        return [2 /*return*/];
+                    }
+                    // Even if the result is Ok, it could be a revert in the contract execution
+                    if (result.isOk) {
+                        flags = result.asOk.flags.toHuman();
+                        // Check if the result is a revert via flags
+                        if (flags.includes('Revert')) {
+                            type = contract.abi.messages[5].returnType // here 5 is the index of the message in the ABI
+                            ;
+                            typeName = (type === null || type === void 0 ? void 0 : type.lookupName) || (type === null || type === void 0 ? void 0 : type.type) || '';
+                            error = contract.abi.registry.createTypeUnsafe(typeName, [result.asOk.data]).toHuman();
+                            console.error(error ? error.Err : 'Revert');
+                            return [2 /*return*/];
+                        }
+                    }
+                    estimatedGas = api.registry.createType('WeightV2', {
+                        refTime: gasRequired.refTime.toBn().mul(util_1.BN_TWO),
+                        proofSize: gasRequired.proofSize.toBn().mul(util_1.BN_TWO),
+                    });
+                    return [4 /*yield*/, contract.tx
+                            .registerClaim({
+                            gasLimit: estimatedGas,
+                            storageDepositLimit: null,
+                            value: new util_1.BN('10000000') // 1 TOKEN or it could be value you want to send to the contract in title
+                        }, propertyTitle, propClaimId, claimCid)
+                            .signAndSend(account, function (res) {
+                            // Send the transaction, like elsewhere this is a normal extrinsic
+                            // with the same rules as applied in the API (As with the read example,
+                            // additional params, if required can follow)
+                            if (res.status.isInBlock) {
+                                console.log('in a block');
+                            }
+                            if (res.status.isFinalized) {
+                                console.log('Successfully sent the txn');
+                                unsub();
+                            }
+                        })];
+                case 2:
+                    unsub = _b.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.registerClaim = registerClaim;

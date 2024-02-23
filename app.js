@@ -43,7 +43,7 @@ import * as meta from "./metadata.js";
 import * as storg from "./storage.js";
 
 // blockchain config
-const contract_addr = "5HSCkfAsHSR8pfnoZB4F1EUuhXR8rK36MzpKP76fty9QqDgY";
+const contract_addr = "5FAVefLRsGdg7Vwqk2TBSmNMtmo5ST8ZzXtLpq9xCwYFkJLX";
 const wsProvider = new WsProvider('ws://127.0.0.1:9944');
 const api = await ApiPromise.create({ provider: wsProvider });
 const contract = new ContractPromise(api, meta.metadata(), contract_addr);
@@ -104,6 +104,10 @@ app.post('/register-ptype', (req, res) => {
 
 app.post('/fetch-ptypes', (req, res) => {
     fetchPropertyTypes(req.body, res);
+});
+
+app.post('/submit-document', (req, res) => {
+    submitDocumentDetails(req.body, res);
 });
 
 app.post('/connect-chains', (req, res) => {
@@ -189,9 +193,7 @@ async function authAccount(req, res) {
 
         // get did document from IPFS
         await chain.authAccount(api, contract, /* user */alice).then(data => {
-            const hexString = data.Ok.data.slice(2);
-            const buffer = Buffer.from(hexString.slice(2), 'hex');
-            const name = filterNonStringChars(buffer.toString())
+            const name = filterNonStringChars(decodeContractData(data));
 
             if (name.length) {
                 let session_nonce = blake2AsHex(mnemonicGenerate());
@@ -234,7 +236,7 @@ async function createPropertyType(req, res) {
         let sessionData = authUser(req.nonce);
         if (sessionData) {
             // create a JSON document containing the required property data;
-            let document = createPropertyDocument(sessionData, req.attributes, req.title);
+            let document = createPropertyDocument(sessionData.ss58_addr, req.attributes, req.title);
 
             // It's important that we store it on IPFS because the document has to be immutable
             // and then store the CID onchain in an authenticated (only-key-changing) manner
@@ -243,7 +245,7 @@ async function createPropertyType(req, res) {
             await storg.uploadToIPFS(JSON.stringify(document)).then(async ptypeCid => {
                 // Get a unique property document ID
                 // Property name + random number
-                let docId = `${req.title}-${generateRandomNumber()}`;
+                let docId = `${req.title.replaceAll("-", " ")}-${generateRandomNumber()}`;
 
                 // call contract to register property type onchain
                 await chain.registerPtype(api, contract, /* sessionData.user */alice, docId, ptypeCid).then(() => {
@@ -274,41 +276,32 @@ async function fetchPropertyTypes(req, res) {
             let authAddr = req.address;
 
             // now fetch CIDs of all the property document types registered
-            await chain.ptypeDocuments(api, contract, /* sessionData.user */alice, authAddr).then(data => {
-                console.log(parseContractBytes(data));
+            await chain.ptypeDocuments(api, contract, /* sessionData.user */alice, authAddr).then(async data => {
+                const titles = [];
+                const entries = decodeContractData(data).split("###");
+
+                for (const e of entries) {
+                    if (e) {
+                        const sanitizedEntry = filterNonStringChars(e);
+                        const [_, ipfsAddr] = sanitizedEntry.split("~");
+                        const titleObj = { slug: sanitizedEntry };
+
+                        try {
+                            const property_doc = JSON.parse(await storg.getFromIPFS(ipfsAddr));
+                            titleObj.name = property_doc.title;
+                            titleObj.attributes = property_doc.attributes;
+                        } catch (error) {
+                            // Handle error from IPFS query
+                            console.error("Error fetching property document from IPFS:", error);
+                        }
+
+                        titles.push(titleObj);
+                    }
+                }
+
+                res.send({ data: titles, error: false });
             });
-
-            // query IPFS to get the DID document
-            // await storg.getFromIPFS(registrar_cid).then(async data => {
-            //     let didDoc = JSON.parse(data);
-
-            //     // get the credential from IPFS also
-            //     await storg.getFromIPFS(credential_cid).then(async cdata => {
-            //         let cred = JSON.parse(cdata);
-
-            //         // create a verifiable presentation from the credential
-            //         let presentation = await kilt.getPresentation(cred, didDoc.mnemonic);
-
-            //         // check validity
-            //         let isValid1 = kilt.verifyPresentation(presentation);     // KILTs API throws errors here
-
-            //         // improvise to check validity
-            //         let isValid2 = verifiers.includes(registrar);
-
-            //         // return validity
-            //         return res.send({
-            //             data: {
-            //                 isValid: isValid1 && isValid2,
-            //                 registrar,
-            //                 claimers,
-            //                 claimer: claimers[claimers.length - 1],
-            //                 timestamp
-            //             },
-            //             error: false
-            //         });
-            //     });
-            // });
-        }
+        } else throw new Error("User not recognized!");
     } catch (e) {
         return res.send({
             data: {
@@ -319,13 +312,50 @@ async function fetchPropertyTypes(req, res) {
     }
 }
 
+// submit filled document and create an unattested claim
+async function submitDocumentDetails(req, res) {
+    try {
+        let sessionData = authUser(req.nonce);
+        if (sessionData) {
+            const propertyTitle = req.title.split("~")[0];
+
+            // construct JSON document
+            const filled_doc = createPropertyDocument(sessionData.address, req.values, propertyTitle.split("-")[0]);
+
+            // generate a unique property claim ID
+            const propClaimId = hash_value(JSON.stringify(filled_doc));
+
+            // upload filled document to IPFS and retrieve CID
+            await storg.uploadToIPFS(JSON.stringify(filled_doc)).then(async claimCid => {
+                // call contract to register property claim onchain, to await verification and attestation
+                await chain.registerClaim(api, contract, /* sessionData.user */alice, propertyTitle, propClaimId, claimCid).then(() => {
+                    // return success
+                    return res.send({
+                        data: {
+                            propClaimId
+                        },
+                        error: false
+                    })
+                });
+            });
+        } else throw new Error("User not recognized!");
+    } catch (e) {
+        return res.send({
+            data: {
+                msg: e.message
+            },
+            error: true
+        })
+    }
+}
+
 // helper functions
 function getUnixTimestamp() {
     return Math.floor(Date.now() / 1000);
 }
 
 function filterNonStringChars(str) {
-    return str.replace(/[^a-zA-Z0-9 ]/g, "");
+    return str.replace(/[^a-zA-Z0-9 \-~]/g, "");
 }
 
 function authUser(nonce) {
@@ -348,18 +378,20 @@ function createPropertyDocument(ss58_address, attributes, title) {
     }
 }
 
+function hash_value(value) {
+    return blake2AsHex(value);
+}
+
 function generateRandomNumber() {
     let min = 111111;
     let max = 999999;
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function parseContractBytes(data) {
-    const hexString = data.Ok.data;
-    let string =  api.createType("String", hexToU8a(hexString)).toString();
-    console.log(hexString);
-    console.log(hexToU8a(hexString));
-    return string;
+function decodeContractData(data) {
+    const hexString = data.Ok.data.slice(2);
+    const buffer = Buffer.from(hexString.slice(2), 'hex');
+    return buffer.toString().trim();
 }
 
 // listen on port 3000
