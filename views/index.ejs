@@ -79,63 +79,37 @@
                                             <div class="alert alert-danger prop-search-error hidden" role="alert">
                                                 ❌ No results found.
                                             </div>
-                                            <p>
-                                                Search for any property document or claim. You can search by <code>property
-                                                document title</code> or specifically for properties belonging to an
-                                                individual using their <code>substrate address</code>.
-                                            </p>
+                                            <p>Search for all properties here by the SS58 of the authority and the property type of the document.</p>
                                         </div>
-                                        <code>Please select your filter. Search by:</code>
+                                        <code>Input the SS58 address of the property authority in your district (e.g Local government property office):</code>
                                         <div class="pt-10">
                                             <form class="row g-3">
                                                 <div class="col-auto width-50">
-                                                    <select class="form-select mb-3 property-search-filter"
-                                                        aria-label=".form-select-lg example">
-                                                        <option value="property-title" selected>Property Document Title
-                                                        </option>
-                                                        <option value="substrate-address">Substrate address</option>
-                                                    </select>
-                                                </div>
-                                            </form>
-                                        </div>
-                                        <div class="hidden document-select-option-1">
-                                            <code>Please input a valid substrate address:</code>
-                                            <form class="row g-3 pt-10">
-                                                <div class="col-auto width-50">
                                                     <input type="text" class="form-control substrate-address-input"
-                                                        placeholder="5FHneW46xGXgs5mUiveU4sbTyGBzmstU...">
+                                                        placeholder="5C6spiS6igvkpnMsq97HXjefjpPqdbFK9YTXZc3n8eutfxSY">
                                                 </div>
                                                 <div class="col-auto">
                                                     <button class="btn btn-primary mb-3 property-search0-btn-before"
-                                                        onclick="return false">Search</button>
+                                                        onclick="return false">Load property types</button>
                                                     <button class="btn btn-primary property-search0-btn-after hidden"
                                                         type="button" disabled>
                                                         <span class="spinner-border spinner-border-sm" role="status"
                                                             aria-hidden="true"></span>
-                                                        Searching...
+                                                        Loading...
                                                     </button>
                                                 </div>
                                             </form>
                                         </div>
-                                        <div class="document-select-option-2">
+                                        <div class="document-select-option-2 hidden">
                                             <code>Please select the specific document type:</code>
-                                            <form class="row g-3 pt-10">
-                                                <div class="col-auto width-50">
+                                            <form class="pt-10">
+                                                <div class="col-auto ">
                                                     <select class="form-select mb-3 property-type-selector"
                                                         aria-label=".form-select-lg example">
-                                                        <option value="zero" class="select-option">Select the right document from
+                                                        <option value="zero" class="select-option">Select the right
+                                                            document from
                                                             this menu</option>
                                                     </select>
-                                                </div>
-                                                <div class="col-auto">
-                                                    <button class="btn btn-primary mb-3 property-search1-btn-before"
-                                                        onclick="return false">Search</button>
-                                                    <button class="btn btn-primary property-search1-btn-after hidden"
-                                                        type="button" disabled>
-                                                        <span class="spinner-border spinner-border-sm" role="status"
-                                                            aria-hidden="true"></span>
-                                                        Searching...
-                                                    </button>
                                                 </div>
                                             </form>
                                         </div>
@@ -206,7 +180,8 @@
                                                     </p>
                                                     <hr>
                                                     <div class="row pt-10 document-property-body"></div>
-                                                    <p class="small center color-gray fs-80 mt-30">&copy; Property Delphi 2024
+                                                    <p class="small center color-gray fs-80 mt-30">&copy; Property
+                                                        Delphi 2024
                                                     </p>
                                                 </div>
 

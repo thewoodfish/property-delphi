@@ -1,11 +1,11 @@
 export function metadata() {
     return {
         "source": {
-            "hash": "0x835dd51c50918a9936f730b236c1893cae43fb03024f61fd676e91f8eed5adbd",
+            "hash": "0x45d25e83009260f939b63e5dfd144d1f69f281085b994541b27172166d45ca56",
             "language": "ink! 4.3.0",
             "compiler": "rustc 1.75.0-nightly",
             "build_info": {
-                "build_mode": "Debug",
+                "build_mode": "Release",
                 "cargo_contract_version": "3.2.0",
                 "rust_toolchain": "nightly-aarch64-apple-darwin",
                 "wasm_opt_settings": {
@@ -36,7 +36,7 @@ export function metadata() {
                             "ink_primitives",
                             "ConstructorResult"
                         ],
-                        "type": 7
+                        "type": 8
                     },
                     "selector": "0x9bae9d5e"
                 }
@@ -47,31 +47,31 @@ export function metadata() {
                     "displayName": [
                         "AccountId"
                     ],
-                    "type": 5
+                    "type": 6
                 },
                 "balance": {
                     "displayName": [
                         "Balance"
                     ],
-                    "type": 14
+                    "type": 17
                 },
                 "blockNumber": {
                     "displayName": [
                         "BlockNumber"
                     ],
-                    "type": 16
+                    "type": 19
                 },
                 "chainExtension": {
                     "displayName": [
                         "ChainExtension"
                     ],
-                    "type": 17
+                    "type": 20
                 },
                 "hash": {
                     "displayName": [
                         "Hash"
                     ],
-                    "type": 15
+                    "type": 18
                 },
                 "maxEventTopics": 4,
                 "timestamp": {
@@ -92,7 +92,7 @@ export function metadata() {
                                 "displayName": [
                                     "AccountId"
                                 ],
-                                "type": 5
+                                "type": 6
                             }
                         },
                         {
@@ -120,7 +120,7 @@ export function metadata() {
                                 "displayName": [
                                     "AccountId"
                                 ],
-                                "type": 5
+                                "type": 6
                             }
                         },
                         {
@@ -159,7 +159,7 @@ export function metadata() {
                                 "displayName": [
                                     "AccountId"
                                 ],
-                                "type": 5
+                                "type": 6
                             }
                         },
                         {
@@ -194,7 +194,7 @@ export function metadata() {
                     "ink",
                     "LangError"
                 ],
-                "type": 9
+                "type": 10
             },
             "messages": [
                 {
@@ -230,7 +230,7 @@ export function metadata() {
                             "ink",
                             "MessageResult"
                         ],
-                        "type": 7
+                        "type": 8
                     },
                     "selector": "0x22557465"
                 },
@@ -238,7 +238,7 @@ export function metadata() {
                     "args": [],
                     "default": false,
                     "docs": [
-                        " Check if an account exists",
+                        " Check if an account exists.",
                         " It also returns the name of the user if it exists"
                     ],
                     "label": "account_exists",
@@ -249,7 +249,7 @@ export function metadata() {
                             "ink",
                             "MessageResult"
                         ],
-                        "type": 10
+                        "type": 11
                     },
                     "selector": "0x5ec33906"
                 },
@@ -276,7 +276,7 @@ export function metadata() {
                     ],
                     "default": false,
                     "docs": [
-                        " Register a property type",
+                        " Register a property type.",
                         " This should only be called by an authority figure (e.g Ministry of Lands)"
                     ],
                     "label": "register_ptype",
@@ -287,7 +287,7 @@ export function metadata() {
                             "ink",
                             "MessageResult"
                         ],
-                        "type": 7
+                        "type": 8
                     },
                     "selector": "0xf89f6c67"
                 },
@@ -299,14 +299,14 @@ export function metadata() {
                                 "displayName": [
                                     "AccountId"
                                 ],
-                                "type": 5
+                                "type": 6
                             }
                         }
                     ],
                     "default": false,
                     "docs": [
-                        " Return the info about property type documents created by a certain authority",
-                        " They are returned as concatenated bytes separated by the '###' character",
+                        " Return the info about property type documents created by a certain authority.",
+                        " They are returned as concatenated bytes separated by the '###' character.",
                         " The property id and address are separated by a '~' character",
                         " E.g prop_id1~prop_addr1###prop_id2~prop_addr2"
                     ],
@@ -318,7 +318,7 @@ export function metadata() {
                             "ink",
                             "MessageResult"
                         ],
-                        "type": 13
+                        "type": 14
                     },
                     "selector": "0xda2d9f3c"
                 },
@@ -354,7 +354,7 @@ export function metadata() {
                     ],
                     "default": false,
                     "docs": [
-                        " Submit a claim to a particular property",
+                        " Submit a claim to a particular property.",
                         " This is the first step, preceeding verification and attestation"
                     ],
                     "label": "register_claim",
@@ -365,9 +365,68 @@ export function metadata() {
                             "ink",
                             "MessageResult"
                         ],
-                        "type": 7
+                        "type": 8
                     },
                     "selector": "0x5940d1d5"
+                },
+                {
+                    "args": [
+                        {
+                            "label": "property_type_id",
+                            "type": {
+                                "displayName": [
+                                    "PropertyTypeId"
+                                ],
+                                "type": 0
+                            }
+                        }
+                    ],
+                    "default": false,
+                    "docs": [
+                        " Returns a list of property (claims) IDs registered according to a particular property type",
+                        " The property IDs are separated by the '#' character"
+                    ],
+                    "label": "property_claims",
+                    "mutates": false,
+                    "payable": true,
+                    "returnType": {
+                        "displayName": [
+                            "ink",
+                            "MessageResult"
+                        ],
+                        "type": 14
+                    },
+                    "selector": "0x88e13c2a"
+                },
+                {
+                    "args": [
+                        {
+                            "label": "property_id",
+                            "type": {
+                                "displayName": [
+                                    "PropertyId"
+                                ],
+                                "type": 0
+                            }
+                        }
+                    ],
+                    "default": false,
+                    "docs": [
+                        " Return the details of a property",
+                        " The claimer is returned as the first element of the tuple",
+                        " The default value of the claimer is the caller. In this scenerio, the length of the vector will be the flag on the client side"
+                    ],
+                    "label": "property_detail",
+                    "mutates": false,
+                    "payable": true,
+                    "returnType": {
+                        "displayName": [
+                            "ink",
+                            "MessageResult"
+                        ],
+                        "type": 15
+                    },
+                    "selector": "0xb2617c4d"
                 }
             ]
         },
@@ -427,53 +486,48 @@ export function metadata() {
                                 "layout": {
                                     "root": {
                                         "layout": {
-                                            "struct": {
-                                                "fields": [
-                                                    {
-                                                        "layout": {
-                                                            "leaf": {
-                                                                "key": "0xae501552",
-                                                                "ty": 5
-                                                            }
-                                                        },
-                                                        "name": "0"
-                                                    },
-                                                    {
-                                                        "layout": {
-                                                            "struct": {
-                                                                "fields": [
-                                                                    {
-                                                                        "layout": {
-                                                                            "leaf": {
-                                                                                "key": "0xae501552",
-                                                                                "ty": 0
-                                                                            }
-                                                                        },
-                                                                        "name": "id"
-                                                                    },
-                                                                    {
-                                                                        "layout": {
-                                                                            "leaf": {
-                                                                                "key": "0xae501552",
-                                                                                "ty": 0
-                                                                            }
-                                                                        },
-                                                                        "name": "address"
-                                                                    }
-                                                                ],
-                                                                "name": "PropertyClaim"
-                                                            }
-                                                        },
-                                                        "name": "1"
-                                                    }
-                                                ],
-                                                "name": "(A, B)"
+                                            "leaf": {
+                                                "key": "0xae501552",
+                                                "ty": 5
                                             }
                                         },
                                         "root_key": "0xae501552"
                                     }
                                 },
                                 "name": "claims"
+                            },
+                            {
+                                "layout": {
+                                    "root": {
+                                        "layout": {
+                                            "struct": {
+                                                "fields": [
+                                                    {
+                                                        "layout": {
+                                                            "leaf": {
+                                                                "key": "0x76dfbe41",
+                                                                "ty": 6
+                                                            }
+                                                        },
+                                                        "name": "claimer"
+                                                    },
+                                                    {
+                                                        "layout": {
+                                                            "leaf": {
+                                                                "key": "0x76dfbe41",
+                                                                "ty": 0
+                                                            }
+                                                        },
+                                                        "name": "property_claim_addr"
+                                                    }
+                                                ],
+                                                "name": "Property"
+                                            }
+                                        },
+                                        "root_key": "0x76dfbe41"
+                                    }
+                                },
+                                "name": "properties"
                             },
                             {
                                 "layout": {
@@ -582,10 +636,20 @@ export function metadata() {
                 "id": 5,
                 "type": {
                     "def": {
+                        "sequence": {
+                            "type": 0
+                        }
+                    }
+                }
+            },
+            {
+                "id": 6,
+                "type": {
+                    "def": {
                         "composite": {
                             "fields": [
                                 {
-                                    "type": 6,
+                                    "type": 7,
                                     "typeName": "[u8; 32]"
                                 }
                             ]
@@ -599,7 +663,7 @@ export function metadata() {
                 }
             },
             {
-                "id": 6,
+                "id": 7,
                 "type": {
                     "def": {
                         "array": {
@@ -610,7 +674,7 @@ export function metadata() {
                 }
             },
             {
-                "id": 7,
+                "id": 8,
                 "type": {
                     "def": {
                         "variant": {
@@ -618,7 +682,7 @@ export function metadata() {
                                 {
                                     "fields": [
                                         {
-                                            "type": 8
+                                            "type": 9
                                         }
                                     ],
                                     "index": 0,
@@ -627,7 +691,7 @@ export function metadata() {
                                 {
                                     "fields": [
                                         {
-                                            "type": 9
+                                            "type": 10
                                         }
                                     ],
                                     "index": 1,
@@ -639,11 +703,11 @@ export function metadata() {
                     "params": [
                         {
                             "name": "T",
-                            "type": 8
+                            "type": 9
                         },
                         {
                             "name": "E",
-                            "type": 9
+                            "type": 10
                         }
                     ],
                     "path": [
@@ -652,7 +716,7 @@ export function metadata() {
                 }
             },
             {
-                "id": 8,
+                "id": 9,
                 "type": {
                     "def": {
                         "tuple": []
@@ -660,7 +724,7 @@ export function metadata() {
                 }
             },
             {
-                "id": 9,
+                "id": 10,
                 "type": {
                     "def": {
                         "variant": {
@@ -679,7 +743,7 @@ export function metadata() {
                 }
             },
             {
-                "id": 10,
+                "id": 11,
                 "type": {
                     "def": {
                         "variant": {
@@ -687,7 +751,7 @@ export function metadata() {
                                 {
                                     "fields": [
                                         {
-                                            "type": 11
+                                            "type": 12
                                         }
                                     ],
                                     "index": 0,
@@ -696,7 +760,7 @@ export function metadata() {
                                 {
                                     "fields": [
                                         {
-                                            "type": 9
+                                            "type": 10
                                         }
                                     ],
                                     "index": 1,
@@ -708,11 +772,11 @@ export function metadata() {
                     "params": [
                         {
                             "name": "T",
-                            "type": 11
+                            "type": 12
                         },
                         {
                             "name": "E",
-                            "type": 9
+                            "type": 10
                         }
                     ],
                     "path": [
@@ -721,18 +785,18 @@ export function metadata() {
                 }
             },
             {
-                "id": 11,
+                "id": 12,
                 "type": {
                     "def": {
                         "tuple": [
-                            12,
+                            13,
                             0
                         ]
                     }
                 }
             },
             {
-                "id": 12,
+                "id": 13,
                 "type": {
                     "def": {
                         "primitive": "bool"
@@ -740,7 +804,7 @@ export function metadata() {
                 }
             },
             {
-                "id": 13,
+                "id": 14,
                 "type": {
                     "def": {
                         "variant": {
@@ -757,7 +821,7 @@ export function metadata() {
                                 {
                                     "fields": [
                                         {
-                                            "type": 9
+                                            "type": 10
                                         }
                                     ],
                                     "index": 1,
@@ -773,7 +837,7 @@ export function metadata() {
                         },
                         {
                             "name": "E",
-                            "type": 9
+                            "type": 10
                         }
                     ],
                     "path": [
@@ -782,7 +846,60 @@ export function metadata() {
                 }
             },
             {
-                "id": 14,
+                "id": 15,
+                "type": {
+                    "def": {
+                        "variant": {
+                            "variants": [
+                                {
+                                    "fields": [
+                                        {
+                                            "type": 16
+                                        }
+                                    ],
+                                    "index": 0,
+                                    "name": "Ok"
+                                },
+                                {
+                                    "fields": [
+                                        {
+                                            "type": 10
+                                        }
+                                    ],
+                                    "index": 1,
+                                    "name": "Err"
+                                }
+                            ]
+                        }
+                    },
+                    "params": [
+                        {
+                            "name": "T",
+                            "type": 16
+                        },
+                        {
+                            "name": "E",
+                            "type": 10
+                        }
+                    ],
+                    "path": [
+                        "Result"
+                    ]
+                }
+            },
+            {
+                "id": 16,
+                "type": {
+                    "def": {
+                        "tuple": [
+                            6,
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "id": 17,
                 "type": {
                     "def": {
                         "primitive": "u128"
@@ -790,13 +907,13 @@ export function metadata() {
                 }
             },
             {
-                "id": 15,
+                "id": 18,
                 "type": {
                     "def": {
                         "composite": {
                             "fields": [
                                 {
-                                    "type": 6,
+                                    "type": 7,
                                     "typeName": "[u8; 32]"
                                 }
                             ]
@@ -810,7 +927,7 @@ export function metadata() {
                 }
             },
             {
-                "id": 16,
+                "id": 19,
                 "type": {
                     "def": {
                         "primitive": "u32"
@@ -818,7 +935,7 @@ export function metadata() {
                 }
             },
             {
-                "id": 17,
+                "id": 20,
                 "type": {
                     "def": {
                         "variant": {}

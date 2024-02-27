@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerClaim = exports.ptypeDocuments = exports.registerPtype = exports.authAccount = exports.createAccount = void 0;
+exports.propertyDetail = exports.propertyClaims = exports.registerClaim = exports.ptypeDocuments = exports.registerPtype = exports.authAccount = exports.createAccount = void 0;
 var util_1 = require("@polkadot/util");
 var MAX_CALL_WEIGHT = new util_1.BN(5000000000000).isub(util_1.BN_ONE);
 var PROOFSIZE = new util_1.BN(1000000);
@@ -297,3 +297,43 @@ function registerClaim(api, contract, account, propertyTitle, propClaimId, claim
     });
 }
 exports.registerClaim = registerClaim;
+function propertyClaims(api, contract, account, propertyTypeId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, result, output;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4 /*yield*/, contract.query.propertyClaims(account.address, {
+                        gasLimit: api === null || api === void 0 ? void 0 : api.registry.createType('WeightV2', {
+                            refTime: MAX_CALL_WEIGHT,
+                            proofSize: PROOFSIZE,
+                        }),
+                        storageDepositLimit: storageDepositLimit,
+                    }, propertyTypeId)];
+                case 1:
+                    _a = _b.sent(), result = _a.result, output = _a.output;
+                    return [2 /*return*/, result.toHuman()];
+            }
+        });
+    });
+}
+exports.propertyClaims = propertyClaims;
+function propertyDetail(api, contract, account, propertyId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, result, output;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4 /*yield*/, contract.query.propertyDetail(account.address, {
+                        gasLimit: api === null || api === void 0 ? void 0 : api.registry.createType('WeightV2', {
+                            refTime: MAX_CALL_WEIGHT,
+                            proofSize: PROOFSIZE,
+                        }),
+                        storageDepositLimit: storageDepositLimit,
+                    }, propertyId)];
+                case 1:
+                    _a = _b.sent(), result = _a.result, output = _a.output;
+                    return [2 /*return*/, result.toHuman()];
+            }
+        });
+    });
+}
+exports.propertyDetail = propertyDetail;

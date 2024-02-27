@@ -267,3 +267,31 @@ export async function registerClaim(api: any, contract: any, account: any, prope
       }
     })
 }
+
+export async function propertyClaims(api: any, contract: any, account: any, propertyTypeId: any): Promise<any> {
+  const { result, output } = await contract.query.propertyClaims(
+    account.address,
+    {
+      gasLimit: api?.registry.createType('WeightV2', {
+        refTime: MAX_CALL_WEIGHT,
+        proofSize: PROOFSIZE,
+      }) as WeightV2,
+      storageDepositLimit,
+    }, propertyTypeId);
+
+  return result.toHuman();
+}
+
+export async function propertyDetail(api: any, contract: any, account: any, propertyId: any): Promise<any> {
+  const { result, output } = await contract.query.propertyDetail(
+    account.address,
+    {
+      gasLimit: api?.registry.createType('WeightV2', {
+        refTime: MAX_CALL_WEIGHT,
+        proofSize: PROOFSIZE,
+      }) as WeightV2,
+      storageDepositLimit,
+    }, propertyId);
+
+  return result.toHuman();
+}

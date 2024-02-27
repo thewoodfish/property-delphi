@@ -195,90 +195,6 @@ function getSessionNonce(value) {
     return sessionStorage.getItem("session_nonce");
 }
 
-async function populateProperties(value, type) {
-    // fetch all the property titles from the chain
-    if (!is_connected()) return;
-    fetch("/fetch-properties", {
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            value, type
-        })
-    })
-        .then(async res => {
-            await res.json().then(res => {
-                // first enable the select box
-                qs(".property-search-filter").disabled = false;
-
-                // change the buttons
-                const index = qs(".property-search-filter").dataset.index;
-                hide(`.property-search${index}-btn-after`);
-                appear(`.property-search${index}-btn-before`);
-
-                let cc = qs(".credential-container");
-                cc.innerHTML = "";
-                if (!res.error) {
-                    // update the UI
-                    let i = 0;
-                    res.data.forEach(p => {
-                        i++;
-
-                        // prepare the verifiers
-                        let verifiers = "";
-                        p.verifiers.forEach(v => {
-                            console.log(p.ptype_registrar);
-                            if (p.ptype_registrar == v)
-                                verifiers += `<div>⭐️ ${v}</div>`;
-                            else
-                                verifiers += `<div>${v}</div>`;
-                        })
-                        cc.innerHTML += `
-                        <hr>
-                        <div class="mt-10 row pr-10">
-                            <div class="col-4 pt-30">
-                                <img src="img/file.png" class="width-100">
-                            </div>
-                            <div class="col-8 card border-0">
-                                <div class="card-body">
-                                    <code class="bold small">Property #${i}</code>
-                                    <div class="mt-20 bold">
-                                        <code>ID:</code>
-                                        <span class="xx-${p.id.substr(0, 7)}">${p.id}</span> <a class="copy pointer" data-class="xx-${p.id.substr(0, 7)}">Copy</a>
-                                    </div>
-                                    <div class="">
-                                        <code>Owner:</code>
-                                        ${p.owner}
-                                    </div>
-                                    <div>
-                                        <code>Verified and signed by:</code>
-                                        <div class="pl-45">
-                                            ${verifiers}
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <code>Details:</code>
-                                        <div class="pl-20">
-                                            <a class="load-property-details underline pointer" data-cid=${p.cid}>load property details</a>
-                                        </div>
-                                    </div>
-                                    <div class="">
-                                        <code>Verification Timestamp:</code> ${p.timestamp != '0' ? convertTimestamp(parseInt(p.timestamp.replaceAll(',', ''))) : "Nil"}
-                                    </div>
-                                </div>
-                            </div>
-                        </div> 
-                    `;
-                    });
-                } else {
-                    appear(".prop-search-error");
-                    setTimeout(() => hide(".prop-search-error"), 5000);
-                }
-            });
-        })
-}
-
 // initialize connection to Chain
 async function initChainConnection(addr) {
     const result = await new Promise((resolve) => {
@@ -558,8 +474,13 @@ document.body.addEventListener(
 
                         // take all the values
                         let values = [];
+                        let labels = [];
                         qsa(".form-document-properties").forEach(e => {
                             values.push(e.value);
+                        })
+
+                        qsa(".form-important-label").forEach(l => {
+                            labels.push(l.innerText);
                         })
 
                         const important_vals = qs(".document-type-selector").value.split("$$$");
@@ -573,6 +494,7 @@ document.body.addEventListener(
                             body: JSON.stringify({
                                 "values": values.join("~"),
                                 "title": important_vals[0],
+                                "labels": labels.joing("~"),
                                 "key": important_vals[3],
                                 "nonce": getSessionNonce()
                             })
@@ -601,63 +523,47 @@ document.body.addEventListener(
                     }
                 }
             } else if (e.classList.contains("property-search0-btn-before")) {
-                let substrate_addr = qs(".substrate-address-input").value;
-                if (substrate_addr) {
+                if (!is_connected()) return;
+                const authAddr = qs(".substrate-address-input").value;
+
+                if (isValidSS58Addr(authAddr)) {
                     hide(".property-search0-btn-before");
                     appear(".property-search0-btn-after");
 
-                    // disable filter
-                    qs(".property-search-filter").disabled = true;
-                    qs(".property-search-filter").dataset.index = "0";
+                    // send request to chain
+                    fetch("/fetch-ptypes", {
+                        method: 'post',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            "address": authAddr,
+                            "nonce": getSessionNonce()
+                        })
+                    })
+                        .then(async res => {
+                            await res.json().then(res => {
+                                hide(".property-search0-btn-after");
+                                appear(".property-search0-btn-before");
 
-                    (async function () {
-                        await populateProperties(substrate_addr, "substrate-addr");
-                    })();
+                                if (!res.error) {
+                                    appear(".document-select-option-2");
+
+                                    // populate UI
+                                    let select = qs(".property-type-selector");
+                                    select.innerHTML = `<option class="select-option" value="zero">Select the right document from this menu</option>`;
+                                    [].forEach.call(res.data, (p) => {
+                                        console.log(p);
+                                        select.innerHTML += `<option value="${p.slug}" class="select-option" data-props="${p.attributes.join("$$$")}">${p.name}</option>`;
+                                    });
+                                } else {
+                                    toast(`❌ ${res.data.msg}`);
+                                }
+                            });
+                        })
                 } else {
                     toast("❌ Please input a valid substrate address");
                 }
-            } else if (e.classList.contains("property-search1-btn-before")) {
-                if (qs(".property-type-selector").value != "zero") {
-                    hide(".property-search1-btn-before");
-                    appear(".property-search1-btn-after");
-                    clearField(".substrate-address-input");
-
-                    // disable filter
-                    qs(".property-search-filter").disabled = true;
-                    qs(".property-search-filter").dataset.index = "1";
-
-                    (async function () {
-                        await populateProperties(qs(".property-type-selector").value, "property-title");
-                    })();
-                }
-            } else if (e.classList.contains("load-property-details")) {
-                // load property details from IPFS
-                if (!is_connected()) return;
-                e.innerText = "loading...";
-                fetch("/doc-details", {
-                    method: 'post',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        "cid": e.dataset.cid
-                    })
-                })
-                    .then(async res => {
-                        await res.json().then(res => {
-                            let div = e.parentElement;
-                            div.innerHTML = "";
-
-                            Object.entries(res.data).forEach(([k, v]) => {
-                                div.innerHTML += `
-                                        <div>
-                                            <code>${k}:</code> <span>${v}</span>
-                                        </div>
-                                    `;
-                            })
-                        });
-                        ;
-                    })
             } else if (e.classList.contains("transfer-property-btn-before")) {
                 if (!is_connected()) return;
                 if (userIsAuth()) {
@@ -980,7 +886,7 @@ document.body.addEventListener(
                     docBody.innerHTML += `
                     <div class="mb-3 col-6">
                         <label for="${a}"
-                            class="form-label">${a}</label>
+                            class="form-label form-important-label">${a}</label>
                         <input type="text" class="form-control form-control-sm form-document-properties"
                             id="${a}"
                             placeholder="">
@@ -991,16 +897,107 @@ document.body.addEventListener(
                 hide(".document-indicator");
                 hide(".property-document-container");
             }
-        } else if (e.classList.contains("property-search-filter")) {
-            if (!e.selectedIndex) {
-                hide(".document-select-option-1");
-                appear(".document-select-option-2");
-            } else {
-                appear(".document-select-option-1");
-                hide(".document-select-option-2");
+        } else if (e.classList.contains("property-type-selector")) {
+            let select = qs(".property-type-selector");
+
+            if (select.value != "zero") {
+                // fetch all the property titles from the chain
+                if (!is_connected()) return;
+                fetch("/fetch-properties", {
+                    method: 'post',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        value: select.value,
+                        "nonce": getSessionNonce()
+                    })
+                })
+                    .then(async res => {
+                        await res.json().then(res => {
+                            let cc = qs(".credential-container");
+                            cc.innerHTML = "";
+                            if (!res.error) {
+                                // update the UI
+                                let i = 0;
+                                res.data.forEach(p => {
+                                    i++;
+
+                                    // property details
+                                    let details = "";
+                                    p.attributes.forEach(a => {
+                                        details += 
+                                        `
+                                        <p>${a}</p>
+                                        `
+                                    });
+
+                                    
+
+                                    cc.innerHTML += `
+                            <hr>
+                            <div class="mt-10 row pr-10">
+                                <div class="col-4 pt-30">
+                                    <img src="img/file.png" class="width-100">
+                                </div>
+                                <div class="col-8 card border-0">
+                                    <div class="card-body">
+                                        <code class="bold small">Property #${i}</code>
+                                        <div class="mt-20 bold">
+                                            <code>ID:</code>
+                                            <span class="xx-${p.id.substr(0, 7)}">${p.id}</span>
+                                            <span class="copy-to-clipboard pointer" data-target="xx-${p.id.substr(0, 7)}">
+                                                        <svg class="copy-to-clipboard" data-target="xx-${p.id.substr(0, 7)}"
+                                                            viewBox="0 -0.5 25 25" height="24" fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg">
+                                                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                                                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round"
+                                                                stroke-linejoin="round"></g>
+                                                            <g id="SVGRepo_iconCarrier">
+                                                                <path class="copy-to-clipboard"
+                                                                    data-target="xx-${p.id.substr(0, 7)}"
+                                                                    d="M8.25005 8.5C8.25005 8.91421 8.58584 9.25 9.00005 9.25C9.41426 9.25 9.75005 8.91421 9.75005 8.5H8.25005ZM9.00005 8.267H9.75006L9.75004 8.26283L9.00005 8.267ZM9.93892 5.96432L10.4722 6.49171L9.93892 5.96432ZM12.2311 5V4.24999L12.2269 4.25001L12.2311 5ZM16.269 5L16.2732 4.25H16.269V5ZM18.5612 5.96432L18.0279 6.49171V6.49171L18.5612 5.96432ZM19.5 8.267L18.75 8.26283V8.267H19.5ZM19.5 12.233H18.75L18.7501 12.2372L19.5 12.233ZM18.5612 14.5357L18.0279 14.0083L18.5612 14.5357ZM16.269 15.5V16.25L16.2732 16.25L16.269 15.5ZM16 14.75C15.5858 14.75 15.25 15.0858 15.25 15.5C15.25 15.9142 15.5858 16.25 16 16.25V14.75ZM9.00005 9.25C9.41426 9.25 9.75005 8.91421 9.75005 8.5C9.75005 8.08579 9.41426 7.75 9.00005 7.75V9.25ZM8.73105 8.5V7.74999L8.72691 7.75001L8.73105 8.5ZM6.43892 9.46432L6.97218 9.99171L6.43892 9.46432ZM5.50005 11.767H6.25006L6.25004 11.7628L5.50005 11.767ZM5.50005 15.734L6.25005 15.7379V15.734H5.50005ZM8.73105 19L8.72691 19.75H8.73105V19ZM12.769 19V19.75L12.7732 19.75L12.769 19ZM15.0612 18.0357L14.5279 17.5083L15.0612 18.0357ZM16 15.733H15.25L15.2501 15.7372L16 15.733ZM16.75 15.5C16.75 15.0858 16.4143 14.75 16 14.75C15.5858 14.75 15.25 15.0858 15.25 15.5H16.75ZM9.00005 7.75C8.58584 7.75 8.25005 8.08579 8.25005 8.5C8.25005 8.91421 8.58584 9.25 9.00005 9.25V7.75ZM12.7691 8.5L12.7732 7.75H12.7691V8.5ZM15.0612 9.46432L15.5944 8.93694V8.93694L15.0612 9.46432ZM16.0001 11.767L15.2501 11.7628V11.767H16.0001ZM15.2501 15.5C15.2501 15.9142 15.5858 16.25 16.0001 16.25C16.4143 16.25 16.7501 15.9142 16.7501 15.5H15.2501ZM9.75005 8.5V8.267H8.25005V8.5H9.75005ZM9.75004 8.26283C9.74636 7.60005 10.0061 6.96296 10.4722 6.49171L9.40566 5.43694C8.65985 6.19106 8.24417 7.21056 8.25006 8.27117L9.75004 8.26283ZM10.4722 6.49171C10.9382 6.02046 11.5724 5.75365 12.2352 5.74999L12.2269 4.25001C11.1663 4.25587 10.1515 4.68282 9.40566 5.43694L10.4722 6.49171ZM12.2311 5.75H16.269V4.25H12.2311V5.75ZM16.2649 5.74999C16.9277 5.75365 17.5619 6.02046 18.0279 6.49171L19.0944 5.43694C18.3486 4.68282 17.3338 4.25587 16.2732 4.25001L16.2649 5.74999ZM18.0279 6.49171C18.494 6.96296 18.7537 7.60005 18.7501 8.26283L20.25 8.27117C20.2559 7.21056 19.8402 6.19106 19.0944 5.43694L18.0279 6.49171ZM18.75 8.267V12.233H20.25V8.267H18.75ZM18.7501 12.2372C18.7537 12.8999 18.494 13.537 18.0279 14.0083L19.0944 15.0631C19.8402 14.3089 20.2559 13.2894 20.25 12.2288L18.7501 12.2372ZM18.0279 14.0083C17.5619 14.4795 16.9277 14.7463 16.2649 14.75L16.2732 16.25C17.3338 16.2441 18.3486 15.8172 19.0944 15.0631L18.0279 14.0083ZM16.269 14.75H16V16.25H16.269V14.75ZM9.00005 7.75H8.73105V9.25H9.00005V7.75ZM8.72691 7.75001C7.6663 7.75587 6.65146 8.18282 5.90566 8.93694L6.97218 9.99171C7.43824 9.52046 8.07241 9.25365 8.73519 9.24999L8.72691 7.75001ZM5.90566 8.93694C5.15985 9.69106 4.74417 10.7106 4.75006 11.7712L6.25004 11.7628C6.24636 11.1001 6.50612 10.463 6.97218 9.99171L5.90566 8.93694ZM4.75005 11.767V15.734H6.25005V11.767H4.75005ZM4.75006 15.7301C4.73847 17.9382 6.51879 19.7378 8.72691 19.75L8.7352 18.25C7.35533 18.2424 6.2428 17.1178 6.25004 15.7379L4.75006 15.7301ZM8.73105 19.75H12.769V18.25H8.73105V19.75ZM12.7732 19.75C13.8338 19.7441 14.8486 19.3172 15.5944 18.5631L14.5279 17.5083C14.0619 17.9795 13.4277 18.2463 12.7649 18.25L12.7732 19.75ZM15.5944 18.5631C16.3402 17.8089 16.7559 16.7894 16.75 15.7288L15.2501 15.7372C15.2537 16.3999 14.994 17.037 14.5279 17.5083L15.5944 18.5631ZM16.75 15.733V15.5H15.25V15.733H16.75ZM9.00005 9.25H12.7691V7.75H9.00005V9.25ZM12.7649 9.24999C13.4277 9.25365 14.0619 9.52046 14.5279 9.99171L15.5944 8.93694C14.8486 8.18282 13.8338 7.75587 12.7732 7.75001L12.7649 9.24999ZM14.5279 9.99171C14.994 10.463 15.2537 11.1001 15.2501 11.7628L16.75 11.7712C16.7559 10.7106 16.3402 9.69106 15.5944 8.93694L14.5279 9.99171ZM15.2501 11.767V15.5H16.7501V11.767H15.2501Z"
+                                                                    fill="#000000"></path>
+                                                            </g>
+                                                        </svg>
+                                                    </span>
+                                        </div>
+                                        <div class="">
+                                            <code>Claimer:</code>
+                                            ${p.claimer}
+                                        </div>
+                                        <div>
+                                            <code>Verified and signed by:</code>
+                                            <div class="pl-45">
+                                                ${p.verifiers}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <code>Details:</code>
+                                            <div class="pl-20">
+                                                ${details}
+                                            </div>
+                                        </div>
+                                        <div class="">
+                                            <code>Claim Submission Timestamp:</code> ${p.timestamp != '0' ? convertTimestamp(parseInt(p.timestamp)) : "Nil"}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div> 
+                        `;
+                                });
+                                console.log(res.data);
+                            } else {
+                                appear(".prop-search-error");
+                                setTimeout(() => hide(".prop-search-error"), 5000);
+                            }
+                        });
+                    })
             }
         }
     }, false);
+
+
 
 // prevent forms from submitting normally
 let forms = document.getElementsByTagName("form");

@@ -43,7 +43,7 @@ import * as meta from "./metadata.js";
 import * as storg from "./storage.js";
 
 // blockchain config
-const contract_addr = "5FAVefLRsGdg7Vwqk2TBSmNMtmo5ST8ZzXtLpq9xCwYFkJLX";
+const contract_addr = "5EHUh4x5cXvrnTk21mADnfNqazuwcNM5CK86QjMrpr2MemH7";
 const wsProvider = new WsProvider('ws://127.0.0.1:9944');
 const api = await ApiPromise.create({ provider: wsProvider });
 const contract = new ContractPromise(api, meta.metadata(), contract_addr);
@@ -108,6 +108,10 @@ app.post('/fetch-ptypes', (req, res) => {
 
 app.post('/submit-document', (req, res) => {
     submitDocumentDetails(req.body, res);
+});
+
+app.post('/fetch-properties', (req, res) => {
+    fetchPropertyDocs(req.body, res);
 });
 
 app.post('/connect-chains', (req, res) => {
@@ -286,16 +290,18 @@ async function fetchPropertyTypes(req, res) {
                         const [_, ipfsAddr] = sanitizedEntry.split("~");
                         const titleObj = { slug: sanitizedEntry };
 
-                        try {
-                            const property_doc = JSON.parse(await storg.getFromIPFS(ipfsAddr));
-                            titleObj.name = property_doc.title;
-                            titleObj.attributes = property_doc.attributes;
-                        } catch (error) {
-                            // Handle error from IPFS query
-                            console.error("Error fetching property document from IPFS:", error);
-                        }
+                        if (ipfsAddr) {
+                            try {
+                                const property_doc = JSON.parse(await storg.getFromIPFS(ipfsAddr));
+                                titleObj.name = property_doc.title;
+                                titleObj.attributes = property_doc.attributes;
+                            } catch (error) {
+                                // Handle error from IPFS query
+                                console.error("Error fetching property document from IPFS:", error);
+                            }
 
-                        titles.push(titleObj);
+                            titles.push(titleObj);
+                        }
                     }
                 }
 
@@ -305,7 +311,7 @@ async function fetchPropertyTypes(req, res) {
     } catch (e) {
         return res.send({
             data: {
-                claimer: null
+                msg: e ? e.toString() : "An error occurred. Please try again."
             },
             error: true
         });
@@ -338,6 +344,62 @@ async function submitDocumentDetails(req, res) {
                     })
                 });
             });
+        } else throw new Error("User not recognized!");
+    } catch (e) {
+        return res.send({
+            data: {
+                msg: e.message
+            },
+            error: true
+        })
+    }
+}
+
+// fetch property documents 
+async function fetchPropertyDocs(req, res) {
+    try {
+        let sessionData = authUser(req.nonce);
+        if (sessionData) {
+            // first thing is to get the property type ID of documents we want to get
+            const [propertyTypeId, _] = req.value.split("~");
+            let propertyFiles = [];
+
+            // fetch all the IDs of properties that are registered under this property type
+            await chain.propertyClaims(api, contract, /* sessionData.user */alice, propertyTypeId).then(async data => {
+                const propertyIds = splitAndTrimHexString(data.Ok.data);
+                for (const propId of propertyIds) {
+                    // query the chain to get the information about a property
+                    // mostly the IPFS address of the claim
+                    await chain.propertyDetail(api, contract, /* sessionData.user */alice, propId).then(async data => {
+                        const ipfsCid = decodeContractData(data).substring(30);
+
+                        // now retrieve the property claim details from IPFS
+                        if (ipfsCid) {
+                            try {
+                                const propertyDoc = JSON.parse(await storg.getFromIPFS(ipfsCid));
+                                propertyFiles.push({
+                                    id: propId,
+                                    claimer: "TBD",
+                                    cid: ipfsCid,
+                                    verifiers: "TBD",
+                                    title: propertyDoc.title.substring(1),
+                                    timestamp: propertyDoc.timestamp,
+                                    attributes: propertyDoc.attributes
+                                });
+                            } catch (error) {
+                                // Handle error from IPFS query
+                                console.error("Error fetching property document from IPFS:", error);
+                            }
+                        }
+                    });
+                };
+            });
+
+            return res.send({
+                data: sortBy("timestamp", propertyFiles),
+                error: false
+            })
+
         } else throw new Error("User not recognized!");
     } catch (e) {
         return res.send({
@@ -392,6 +454,46 @@ function decodeContractData(data) {
     const hexString = data.Ok.data.slice(2);
     const buffer = Buffer.from(hexString.slice(2), 'hex');
     return buffer.toString().trim();
+}
+
+function splitStringIntoEqualParts(inputString, numParts) {
+    const partLength = Math.ceil(inputString.length / numParts);
+    const parts = [];
+
+    for (let i = 0; i < inputString.length; i += partLength) {
+        const part = inputString.substring(i, i + partLength);
+        parts.push(part);
+    }
+
+    return parts;
+}
+
+function splitAndTrimHexString(str) {
+    // get the number of the strings we'll get from the larger hex string
+    str = str.substring(8);
+    let no = Math.floor(str.length / 64);
+    // break the string into {{no}} parts
+    let strings = splitStringIntoEqualParts(str, no);
+    let trimmed_strings = [];
+
+    for (const i of strings) {
+        let new_str = "0x" + i;
+        trimmed_strings.push(new_str.substring(0, new_str.length - 2));
+    }
+
+    return trimmed_strings;
+}
+
+function sortBy(key, arr) {
+    return arr.sort((a, b) => {
+        if (a[key] < b[key]) {
+            return -1;
+        } else if (a[key] > b[key]) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
 }
 
 // listen on port 3000
