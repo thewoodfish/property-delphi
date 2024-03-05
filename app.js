@@ -43,7 +43,7 @@ import * as meta from "./metadata.js";
 import * as storg from "./storage.js";
 
 // blockchain config
-const contract_addr = "5C6NtnWYciFk6xVU6NPhK1YqCBG2gPHjPfoMNP1HeDoddmph";
+const contract_addr = "5CqXCe1J2hFjFCPe6JaJbjFkT1263DEqoqAFcTufbFUtjkXa";
 const wsProvider = new WsProvider('ws://127.0.0.1:9944');
 const api = await ApiPromise.create({ provider: wsProvider });
 const contract = new ContractPromise(api, meta.metadata(), contract_addr);
