@@ -62,6 +62,55 @@ function convertTimestamp(timestamp) {
     return `${dayOfWeek} ${hours}:${minutes}${ampm}, ${dayOfMonth}${getOrdinalIndicator(dayOfMonth)} of ${month}, ${date.getUTCFullYear()}`;
 }
 
+function convertTimestampString(timestampString) {
+    // Parse the timestamp string
+    const [dateString, timeString] = timestampString.split(', ');
+    const [month, day, year] = dateString.split('/');
+    let [time, meridian] = timeString.split(' ');
+
+    let [hour, minute, second] = time.split(':');
+    hour = parseInt(hour);
+    if (hour > 12) {
+        meridian = "PM";
+    } else {
+        meridian = "AM";
+    }
+
+    // 05/03/2024, 19:02:43
+
+    // Create a new date object from the parsed components
+    const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+
+    // Get the day of the week
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayOfWeek = daysOfWeek[date.getUTCDay()];
+
+    // Get the month
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthString = months[date.getUTCMonth()];
+
+    // Get the day of month
+    const dayOfMonth = date.getUTCDate();
+
+    // Get the hours, minutes
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+
+    // Return the nicely formatted date time string
+    return `${dayOfWeek} ${hours}:${minutes}${meridian}, ${dayOfMonth}${getOrdinalIndicator(dayOfMonth)} of ${monthString}, ${date.getUTCFullYear()}`;
+}
+
+// Function to get the ordinal indicator (st, nd, rd, th)
+function getOrdinalIndicator(day) {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+        case 1: return "st";
+        case 2: return "nd";
+        case 3: return "rd";
+        default: return "th";
+    }
+}
+
 function isValidSS58Addr(input) {
     // Regular expression for a valid SS58 address (excluding version byte)
     const regex = /^[a-km-zA-HJ-NP-Z1-9]{44,47}$/;
@@ -108,9 +157,13 @@ async function heartbeat() {
     })
         .then(async res => {
             await res.json().then(res => {
-                if (!is_connected())
+                if (!is_connected()) {
                     toast("✅ connection repaired");
-
+                    // automatically renew session
+                    (async function () {
+                        await queryServerToSignIn(getSessionNonce(), false);
+                    })();
+                }
                 hide(".chain-connecting");
                 appear(".chain-connected");
             });
@@ -494,7 +547,7 @@ document.body.addEventListener(
                             body: JSON.stringify({
                                 "values": values.join("~"),
                                 "title": important_vals[0],
-                                "labels": labels.joing("~"),
+                                "labels": labels.join("~"),
                                 "key": important_vals[3],
                                 "nonce": getSessionNonce()
                             })
@@ -591,6 +644,9 @@ document.body.addEventListener(
                         qs(".trans-property-size").disabled = true;
                         qs(".input-for-transfer").disabled = true;
 
+                        // disable the search button
+                        qs(".transfer-search-btn-before").disabled = true;
+
                         // send to server
                         fetch("/transfer-property", {
                             method: 'post',
@@ -600,10 +656,10 @@ document.body.addEventListener(
                             body: JSON.stringify({
                                 "values": values.join("~"),
                                 "recipient": recipient.value,
-                                "transfer_all": psize.value == total_size,
-                                "property_size": qs(".trans-property-size").value,
-                                "total_size": qs(".property-size").innerText,
-                                "property_id": qs(".trans-document-title").dataset.pid,
+                                "transferAll": psize.value == total_size,
+                                "propertySize": qs(".trans-property-size").value,
+                                "totalSize": qs(".property-size").innerText,
+                                "propertyId": qs(".trans-document-title").dataset.pid,
                                 "nonce": getSessionNonce()
                             })
                         })
@@ -611,6 +667,10 @@ document.body.addEventListener(
                                 await res.json().then(res => {
                                     qs(".trans-property-size").disabled = false;
                                     qs(".input-for-transfer").disabled = false;
+                                    qs(".transfer-search-btn-before").disabled = false;
+
+                                    appear(".transfer-property-btn-before");
+                                    hide(".transfer-property-btn-after");
 
                                     if (!res.error) {
                                         clearField(".input-for-transfer");
@@ -620,7 +680,7 @@ document.body.addEventListener(
                                         appear(".property-transfer-success");
                                         setTimeout(() => hide(".property-transfer-success"), 5000);
                                     } else {
-                                        qs(".main-error-text").innerText = `❌ Could not complete transfer`;
+                                        qs(".main-error-text").innerText = `❌ ${res.data.msg}`;
                                         appear(".property-transfer-error");
                                         setTimeout(() => hide(".property-transfer-error"), 5000);
                                     }
@@ -633,8 +693,8 @@ document.body.addEventListener(
                 }
             } else if (e.classList.contains("search-pdoc-btn-before")) {
                 if (!is_connected()) return;
-                let propertID = qs(".input-for-signature").value;
-                if (propertID) {
+                let propertyID = qs(".input-for-signature").value;
+                if (propertyID) {
                     hide(".search-pdoc-btn-before");
                     appear(".search-pdoc-btn-after");
 
@@ -645,7 +705,8 @@ document.body.addEventListener(
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            "property_id": propertID,
+                            "propertyId": propertyID,
+                            "nonce": getSessionNonce()
                         })
                     })
                         .then(async res => {
@@ -657,8 +718,11 @@ document.body.addEventListener(
                                     appear(".document-sig-indicator");
                                     appear(".document-sig-container");
                                     qs(".sig-document-title").innerText = res.data.title;
-                                    qs(".sig-document-title").dataset.pid = propertID;
-                                    qs(".property-claimer").innerText = res.data.owner;
+                                    qs(".sig-document-title").dataset.pid = propertyID;
+                                    qs(".property-claimer").innerText = res.data.claimer;
+
+                                    // set the property type
+                                    qs(".sig-document-title").dataset.ptype = res.data.propertyTypeId;
 
                                     let div = qs(".document-sig-body");
                                     div.innerHTML = "";
@@ -699,7 +763,8 @@ document.body.addEventListener(
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        "property_id": propertID,
+                        "propertyId": propertID,
+                        "propertyTypeId": qs(".sig-document-title").dataset.ptype,
                         "nonce": getSessionNonce()
                     })
                 })
@@ -739,7 +804,8 @@ document.body.addEventListener(
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            "property_id": propertID,
+                            "propertyId": propertID,
+                            "nonce": getSessionNonce()
                         })
                     })
                         .then(async res => {
@@ -771,7 +837,7 @@ document.body.addEventListener(
                                     if (res.data.isValid) {
                                         appear(".positive-verdict");
                                         hide(".negative-verdict");
-                                        qs(".verdict-datetime").innerText = convertTimestamp(res.data.timestamp.replaceAll(',', ''));
+                                        qs(".verdict-datetime").innerText = convertTimestampString(res.data.timestamp);
                                     } else {
                                         hide(".positive-verdict");
                                         appear(".negative-verdict");
@@ -802,7 +868,8 @@ document.body.addEventListener(
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            "property_id": propertID,
+                            "propertyId": propertID,
+                            "nonce": getSessionNonce()
                         })
                     })
                         .then(async res => {
@@ -924,15 +991,10 @@ document.body.addEventListener(
                                     i++;
 
                                     // property details
-                                    let details = "";
-                                    p.attributes.forEach(a => {
-                                        details += 
-                                        `
-                                        <p>${a}</p>
-                                        `
-                                    });
-
-                                    
+                                    const details = p.attributes.map((attribute, index) => {
+                                        const label = p.labels[index];
+                                        return `<div class="property-detail-x"><code>${label}:</code> ${attribute}</div>`;
+                                    }).join('');
 
                                     cc.innerHTML += `
                             <hr>
@@ -965,12 +1027,6 @@ document.body.addEventListener(
                                         <div class="">
                                             <code>Claimer:</code>
                                             ${p.claimer}
-                                        </div>
-                                        <div>
-                                            <code>Verified and signed by:</code>
-                                            <div class="pl-45">
-                                                ${p.verifiers}
-                                            </div>
                                         </div>
                                         <div>
                                             <code>Details:</code>

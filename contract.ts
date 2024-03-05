@@ -21,7 +21,7 @@ export async function createAccount(api: any, contract: any, account: any, name:
       gasLimit: gasLimit,
       storageDepositLimit: null,
       value: new BN('1000000000000000000')
-    }, name, timestamp
+    }, account.address, name, timestamp
   )
 
   // Check for errors
@@ -68,7 +68,7 @@ export async function createAccount(api: any, contract: any, account: any, name:
       gasLimit: estimatedGas,
       storageDepositLimit: null,
       value: new BN('10000000') // 1 TOKEN or it could be value you want to send to the contract in title
-    }, name, timestamp)
+    }, account.address, name, timestamp)
     .signAndSend(account, (res: any) => {
       // Send the transaction, like elsewhere this is a normal extrinsic
       // with the same rules as applied in the API (As with the read example,
@@ -284,6 +284,180 @@ export async function propertyClaims(api: any, contract: any, account: any, prop
 
 export async function propertyDetail(api: any, contract: any, account: any, propertyId: any): Promise<any> {
   const { result, output } = await contract.query.propertyDetail(
+    account.address,
+    {
+      gasLimit: api?.registry.createType('WeightV2', {
+        refTime: MAX_CALL_WEIGHT,
+        proofSize: PROOFSIZE,
+      }) as WeightV2,
+      storageDepositLimit,
+    }, propertyId);
+
+  return result.toHuman();
+}
+
+export async function transferProperty(
+  api: any, contract: any, account: any, propertyId: any, recipient: any, sendersClaimIpfsAddr: any,
+  sendersPropertyId: any, recipientsClaimIpfsAddr: any, recipientsPropertyId: any, timeOfTransfer: any
+) {
+  // Get the initial gas WeightV2 using api.consts.system.blockWeights['maxBlock']
+  const gasLimit = api.registry.createType(
+    'WeightV2',
+    api.consts.system.blockWeights['maxBlock']
+  )
+
+  // Query the contract message
+  // This will return the gas required and storageDeposit to execute the message
+  // and the result of the message
+  const { gasRequired, storageDeposit, result } = await contract.query.transferProperty(
+    account.address,
+    {
+      gasLimit: gasLimit,
+      storageDepositLimit: null,
+      value: new BN('1000000000000000000')
+    }, propertyId, recipient, sendersClaimIpfsAddr, sendersPropertyId, recipientsClaimIpfsAddr, recipientsPropertyId, timeOfTransfer
+  )
+
+  // Check for errors
+  if (result.isErr) {
+    let error = ''
+    if (result.asErr.isModule) {
+      const dispatchError = api.registry.findMetaError(result.asErr.asModule)
+      error = dispatchError.docs.length ? dispatchError.docs.concat().toString() : dispatchError.name
+    } else {
+      error = result.asErr.toString()
+    }
+
+    console.error(error)
+    return
+  }
+
+  // Even if the result is Ok, it could be a revert in the contract execution
+  if (result.isOk) {
+    const flags = result.asOk.flags.toHuman()
+    // Check if the result is a revert via flags
+    if (flags.includes('Revert')) {
+      const type = contract.abi.messages[5].returnType // here 5 is the index of the message in the ABI
+      const typeName = type?.lookupName || type?.type || ''
+      const error = contract.abi.registry.createTypeUnsafe(typeName, [result.asOk.data]).toHuman()
+
+      console.error(error ? (error as any).Err : 'Revert')
+      return
+    }
+  }
+
+  // Gas require is more than gas returned in the query
+  // To be safe, we double the gasLimit.
+  // Note, doubling gasLimit will not cause spending more gas for the Tx
+  const estimatedGas = api.registry.createType(
+    'WeightV2',
+    {
+      refTime: gasRequired.refTime.toBn().mul(BN_TWO),
+      proofSize: gasRequired.proofSize.toBn().mul(BN_TWO),
+    }
+  ) as WeightV2
+
+  const unsub = await contract.tx
+    .transferProperty({
+      gasLimit: estimatedGas,
+      storageDepositLimit: null,
+      value: new BN('10000000') // 1 TOKEN or it could be value you want to send to the contract in title
+    }, propertyId, recipient, sendersClaimIpfsAddr, sendersPropertyId, recipientsClaimIpfsAddr, recipientsPropertyId, timeOfTransfer)
+    .signAndSend(account, (res: any) => {
+      // Send the transaction, like elsewhere this is a normal extrinsic
+      // with the same rules as applied in the API (As with the read example,
+      // additional params, if required can follow)
+      if (res.status.isInBlock) {
+        console.log('in a block')
+      }
+      if (res.status.isFinalized) {
+        console.log('Successfully sent the txn')
+        unsub()
+      }
+    })
+}
+
+export async function signDocument(
+  api: any, contract: any, account: any, propertyId: any, propertyTypeId: any, attestationTimstamp: any) {
+  // Get the initial gas WeightV2 using api.consts.system.blockWeights['maxBlock']
+  const gasLimit = api.registry.createType(
+    'WeightV2',
+    api.consts.system.blockWeights['maxBlock']
+  )
+
+  // Query the contract message
+  // This will return the gas required and storageDeposit to execute the message
+  // and the result of the message
+  const { gasRequired, storageDeposit, result } = await contract.query.signDocument(
+    account.address,
+    {
+      gasLimit: gasLimit,
+      storageDepositLimit: null,
+      value: new BN('1000000000000000000')
+    }, propertyId, propertyTypeId, attestationTimstamp
+  )
+
+  // Check for errors
+  if (result.isErr) {
+    let error = ''
+    if (result.asErr.isModule) {
+      const dispatchError = api.registry.findMetaError(result.asErr.asModule)
+      error = dispatchError.docs.length ? dispatchError.docs.concat().toString() : dispatchError.name
+    } else {
+      error = result.asErr.toString()
+    }
+
+    console.error(error)
+    return "error"
+  }
+
+  // Even if the result is Ok, it could be a revert in the contract execution
+  if (result.isOk) {
+    const flags = result.asOk.flags.toHuman()
+    // Check if the result is a revert via flags
+    if (flags.includes('Revert')) {
+      const type = contract.abi.messages[5].returnType // here 5 is the index of the message in the ABI
+      const typeName = type?.lookupName || type?.type || ''
+      const error = contract.abi.registry.createTypeUnsafe(typeName, [result.asOk.data]).toHuman()
+
+      console.error(error ? (error as any).Err : 'Revert')
+      return "error"
+    }
+  }
+
+  // Gas require is more than gas returned in the query
+  // To be safe, we double the gasLimit.
+  // Note, doubling gasLimit will not cause spending more gas for the Tx
+  const estimatedGas = api.registry.createType(
+    'WeightV2',
+    {
+      refTime: gasRequired.refTime.toBn().mul(BN_TWO),
+      proofSize: gasRequired.proofSize.toBn().mul(BN_TWO),
+    }
+  ) as WeightV2
+
+  const unsub = await contract.tx
+    .signDocument({
+      gasLimit: estimatedGas,
+      storageDepositLimit: null,
+      value: new BN('10000000') // 1 TOKEN or it could be value you want to send to the contract in title
+    }, propertyId, propertyTypeId, attestationTimstamp)
+    .signAndSend(account, (res: any) => {
+      // Send the transaction, like elsewhere this is a normal extrinsic
+      // with the same rules as applied in the API (As with the read example,
+      // additional params, if required can follow)
+      if (res.status.isInBlock) {
+        console.log('in a block')
+      }
+      if (res.status.isFinalized) {
+        console.log('Successfully sent the txn')
+        unsub()
+      }
+    })
+}
+
+export async function attestationStatus(api: any, contract: any, account: any, propertyId: any): Promise<any> {
+  const { result, output } = await contract.query.attestationStatus(
     account.address,
     {
       gasLimit: api?.registry.createType('WeightV2', {
