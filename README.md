@@ -38,8 +38,8 @@ With Property Delphi, nobody can take what is yours and leave you with nothing.
 - After installation of all the necessary packages, run `npm start`.
 - Start interacting with Property Delphi and making state changes onchain!
 
-### Blockchain Node
-The code running on a Property Delphi contracts node can be found here at -> https://github.com/thewoodfish/property-delphi-contract
+### The Delphi Contract
+The Property Delphi contracts code can can be found here at -> https://github.com/thewoodfish/property-delphi-contract
 
 ## Going forward
 
