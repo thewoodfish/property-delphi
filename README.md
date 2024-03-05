@@ -31,7 +31,7 @@ With Property Delphi, nobody can take what is yours and leave you with nothing.
 <img src="https://github.com/thewoodfish/property_delphi/blob/main/public/img/screenshot-6.png" style="width: 700px">
 
 ## How to run or test Property Delphi
-- Install `npm` and `nodeJS` on your computer with `v16+`.
+- Install `npm` and `nodeJS` on your computer with `v18+`.
 - Clone this(Property Delphi) repo.
 - Set up a local contracts node. Directions are given here -> https://github.com/thewoodfish/property-delphi-contract#running-a-local-node
 - Run `npm install`.
