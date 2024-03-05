@@ -1,5 +1,5 @@
 # Property Delphi
-Property Delphi is a blockchain solution built with <a target="_blank" href="https://use.ink">substrate</a>, which empowers you to create an indisputable, irrefutable proof of ownership of your various properties. e.g a plot of land.
+Property Delphi is a blockchain solution built with <a target="_blank" href="https://use.ink">ink!</a>, which empowers you to create an indisputable, irrefutable proof of ownership of your various properties. e.g a plot of land.
 With Property Delphi, nobody can take what is yours and leave you with nothing.
 
 ## How does Property Delphi Work?
