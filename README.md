@@ -1,4 +1,4 @@
-<img src="https://github.com/thewoodfish/property-delphi/blob/main/public/img/logo.png">
+<img src="https://github.com/thewoodfish/property-delphi/blob/main/public/img/logo.png" style="width: 300px">
 
 Property Delphi is a blockchain solution built with <a target="_blank" href="https://use.ink">ink!</a>, which empowers you to create an indisputable, irrefutable proof of ownership of your various properties. e.g a plot of land.
 With Property Delphi, nobody can take what is yours and leave you with nothing.
