@@ -39,7 +39,7 @@ With Property Delphi, nobody can take what is yours and leave you with nothing.
 - Start interacting with Property Delphi and making state changes onchain!
 
 ### The Delphi Contract
-The Property Delphi contracts code can can be found here at -> https://github.com/thewoodfish/property-delphi-contract
+The Property Delphi contract code can can be found here at -> https://github.com/thewoodfish/property-delphi-contract
 
 ## Going forward
 
