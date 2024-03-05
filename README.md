@@ -9,6 +9,7 @@ With Property Delphi, nobody can take what is yours and leave you with nothing.
 - Signatures: After proper investigation by the authority, the authority signs the document. The property document and its information (including the rightful current owner) is only considered true and valid when the authority signs it.
 - The signatures are recorded on the blockchain and timestamped, thereby cementing an individuals claim to the property, from now to eternity. 
 - Properties can be transferred from one individual to the other, e.g from father to son in a secure, transparent and immutable fashion.
+- The documents are stored on IPFS, with the CIDs recorded onchain, hence making them secure and immutable.
 - All these interactions are recorded on the blockchain for transparency and security.
 
 ## Notable Property Delphi Operations
@@ -42,7 +43,10 @@ With Property Delphi, nobody can take what is yours and leave you with nothing.
 The Property Delphi contract code can can be found here at -> https://github.com/thewoodfish/property-delphi-contract
 
 ## Going forward
-
+There a few improvements being considered for property delphi going forward.
+- Pinning the necessary files e.i credentials, DID documents etc on storage layers especially the CRUST network.
+- Implementing a multisignature attestation mechanism.
+- etc.
 
 ### Final
 So all in all, even though your physical documents can be duplicated or falsified by scammers, once you fill your document using property delphi and get the right authority to sign it, 😁 YOU MY FRIEND, ARE VERY SAFE, FOREVER! The great Delphi will always speak in your favour!
