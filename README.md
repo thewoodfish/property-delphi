@@ -3,15 +3,8 @@
 Property Delphi is a blockchain solution built with <a target="_blank" href="https://use.ink">ink!</a>, which empowers you to create an indisputable, irrefutable proof of ownership of your various properties. e.g a plot of land.
 With Property Delphi, nobody can take what is yours and leave you with nothing.
 
-## How does Property Delphi Work?
-
-- A certain authority creates a property document and lists the fields that must be filled in the document.
-- Users can then fill the document and submit it. This filled document is accessible to the user and authority.
-- Signatures: After proper investigation by the authority, the authority signs the document. The property document and its information (including the rightful current owner) is only considered true and valid when the authority signs it.
-- The signatures are recorded on the blockchain and timestamped, thereby cementing an individuals claim to the property, from now to eternity. 
-- Properties can be transferred from one individual to the other, e.g from father to son in a secure, transparent and immutable fashion.
-- The documents are stored on IPFS, with the CIDs recorded onchain, hence making them secure and immutable.
-- All these interactions are recorded on the blockchain for transparency and security.
+# Property Delphi Smart Contract
+This repo contains the code for the delphi smart contract running on a typical substrate contracts node. The property oracle contract is very important because it records critical information about users of the networks, the properties being secured or claimed, the claims and right to claim of the properties and so on, serving as a source of truth and decisions. We would examine the contract properly. The property delphi contract is completely built with <a target="_blank" href="https://use.ink">ink!</a> which is the best language for writing smart contracts.
 
 ## Notable Property Delphi Operations
 - `Search for property`
