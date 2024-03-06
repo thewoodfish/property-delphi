@@ -77,6 +77,7 @@ function convertTimestampString(timestampString) {
     }
 
     // 05/03/2024, 19:02:43
+    hour = "10";
 
     // Create a new date object from the parsed components
     const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);

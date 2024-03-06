@@ -172,7 +172,7 @@ async function createAccount(req, res) {
         // but the account is not funded, so we'll be using alice || bob
 
         // call contract to register account
-        await chain.createAccount(api, contract, /* user */alice, req.name, getUnixTimestampAsString()).then(() => {
+        await chain.createAccount(api, contract, /* user */bob, req.name, getUnixTimestampAsString()).then(() => {
             // return the keys to the user for next auth
             return res.send({
                 data: {
