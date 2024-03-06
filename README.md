@@ -15,22 +15,22 @@ With Property Delphi, nobody can take what is yours and leave you with nothing.
 
 ## Notable Property Delphi Operations
 - `Search for property`
-<img src="https://github.com/thewoodfish/property_delphi/blob/main/public/img/screenshot-1.png" style="width: 700px">
+<img src="https://github.com/thewoodfish/property-delphi/blob/main/public/img/screenshot-1.png" style="width: 700px">
 
 - `Create a property document type`
-<img src="https://github.com/thewoodfish/property_delphi/blob/main/public/img/screenshot-2.png" style="width: 700px">
+<img src="https://github.com/thewoodfish/property-delphi/blob/main/public/img/screenshot-2.png" style="width: 700px">
 
 -  `Register a property`
-<img src="https://github.com/thewoodfish/property_delphi/blob/main/public/img/screenshot-3.png" style="width: 700px">
+<img src="https://github.com/thewoodfish/property-delphi/blob/main/public/img/screenshot-3.png" style="width: 700px">
 
 -  `Transfer your property`
-<img src="https://github.com/thewoodfish/property_delphi/blob/main/public/img/screenshot-4.png" style="width: 700px">
+<img src="https://github.com/thewoodfish/property-delphi/blob/main/public/img/screenshot-4.png" style="width: 700px">
 
 -  `Sign Document`
-<img src="https://github.com/thewoodfish/property_delphi/blob/main/public/img/screenshot-5.png" style="width: 700px">
+<img src="https://github.com/thewoodfish/property-delphi/blob/main/public/img/screenshot-5.png" style="width: 700px">
 
 -  `Make enquiry about a property`
-<img src="https://github.com/thewoodfish/property_delphi/blob/main/public/img/screenshot-6.png" style="width: 700px">
+<img src="https://github.com/thewoodfish/property-delphi/blob/main/public/img/screenshot-6.png" style="width: 700px">
 
 ## How to run or test Property Delphi
 - Install `npm` and `nodeJS` on your computer with `v18+`.
