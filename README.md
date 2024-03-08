@@ -5,7 +5,7 @@ With Property Delphi, nobody can take what is yours and leave you with nothing.
 
 ## How does Property Delphi Work?
 
-- A certain authority creates a property document and lists the fields that must be filled in the document.
+- A certain authority creates a property document schema and lists the fields that must be filled in the document.
 - Users can then fill the document and submit it. This filled document is accessible to the user and authority.
 - Signatures: After proper investigation by the authority, the authority signs the document. The property document and its information (including the rightful current owner) is only considered true and valid when the authority signs it.
 - The signatures are recorded on the blockchain and timestamped, thereby cementing an individuals claim to the property, from now to eternity. 
